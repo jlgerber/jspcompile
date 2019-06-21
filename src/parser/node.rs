@@ -1,4 +1,3 @@
-
 use nom::{
     IResult,
     branch::alt,
@@ -8,8 +7,8 @@ use nom::{
     //error::ErrorKind,
     character::complete::{char, space0, multispace0, },
 };
-
 use crate::helpers::*;
+
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Node {
@@ -46,11 +45,36 @@ impl Node {
 pub fn parse_node(input: &str) -> IResult<&str, Node> {
     alt((
         parse_node_pair,
-        parse_node_simple
+        parse_node_regex,
+        parse_node_simple,
     ))
     (input)
 }
 
+#[cfg(test)]
+mod parse_node {
+    use super::*;
+    //use nom::error::ErrorKind;
+
+    #[test]
+    fn can_parse_regex_simple() {
+        let result = parse_node(r#" rd "#);
+        assert_eq!(result, Ok( ("", Node::Simple("rd".to_string())) ) ) ;
+    }
+
+    #[test]
+    fn can_parse_node_pair() {
+        let result = parse_node(r#"rd = RD "#);
+        assert_eq!(result, Ok( ("", Node::new_pair("rd", "RD")) ) ) ;
+    }
+
+    #[test]
+    fn can_parse_node_regex() {
+        let result = parse_node(r#"rd = $rdexpr "#);
+        assert_eq!(result, Ok( ("", Node::new_regex("rd", "rdexpr")) ) ) ;
+    }
+
+}
 
 // parse simple node - that is:
 // rd_node =   rd
