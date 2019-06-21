@@ -73,7 +73,6 @@ impl Node {
 
 }
 
-
 /// Parse node
 pub fn parse_node(input: &str) -> IResult<&str, Node> {
     alt((
