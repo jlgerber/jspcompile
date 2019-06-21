@@ -7,25 +7,8 @@ use nom::{
     character::complete::{ space0, alphanumeric1,},
 };
 
-use crate::helpers::*;
+use crate::{helpers::*, Edge};
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct Edge {
-    pub from: String,
-    pub to: String,
-}
-
-impl Edge {
-    pub fn new<I>(from: I, to: I) -> Edge 
-    where
-        I: Into<String>
-    {
-        Edge{
-            from: from.into(),
-            to: to.into()
-        }
-    }
-}
 
 /// Parse input &str into a vector of edges. 
 /// 

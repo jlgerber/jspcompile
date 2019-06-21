@@ -9,19 +9,7 @@ use nom::{
 
 use crate::helpers::*;
 
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum Regex {
-    Simple{
-        name:String, 
-        value: String
-    },
-    Complex{
-        name: String, 
-        positive: String, 
-        negative: String
-    },
-}
+use crate::Regex;
 
 // parse simple regex - that is:
 // num_under =   "[0-9_]+"

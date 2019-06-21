@@ -6,15 +6,7 @@ use nom::{
     character::complete::{ space0, multispace0, alphanumeric1,},
 };
 
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum Header {
-    Regex,
-    Nodes,
-    Graph,
-    Unknown(String),
-}
-
+use crate::Header;
 
 /// Parse the section header of the format
 /// [regex]
