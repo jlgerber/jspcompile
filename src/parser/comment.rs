@@ -2,19 +2,25 @@ use nom::{
     IResult,
     sequence::{preceded},
     bytes::complete::{tag},
-    combinator::{rest},
+    combinator::{rest,map},
     character::complete::{space0},
 };
 
+use crate::ParseResult;
 
 
-pub fn parse_comment(input: &str) -> IResult<&str, &str> {
-    preceded(
+pub fn parse_comment(input: &str) -> IResult<&str, ParseResult> {
+    map(
         preceded(
-            space0, 
-            tag("#")
-        ),
-        rest
+            preceded(
+                space0, 
+                tag("#")
+            ),
+            rest
+        ), 
+        |item: &str| {
+            ParseResult::Comment(item.to_string())
+        }
     )
     (input)
 }
@@ -27,13 +33,13 @@ mod comment {
     #[test]
     fn can_parse_comment() {
         let c = parse_comment(" # this is a comment");
-        assert_eq!(c, Ok(("", " this is a comment")));
+        assert_eq!(c, Ok(("", ParseResult::Comment(" this is a comment".to_string()))));
     }
 
  
     #[test]
     fn can_parse_comment_2() {
         let c = parse_comment(" # this is a comment    ");
-        assert_eq!(c, Ok(("", " this is a comment    ")));
+        assert_eq!(c, Ok(("", ParseResult::Comment( " this is a comment    ".to_string()))));
     }
 }
