@@ -16,7 +16,7 @@ fn is_ident_char(c: char) -> bool {
         (c > '\x2F'&& c < '\x3A')|| 
         // lowercase letters
         (c > '\x60'&& c < '\x7B') || 
-        ['_', '-' ].contains(&c)
+        ['_' ].contains(&c)
 }
 
 #[cfg(test)]
@@ -27,7 +27,7 @@ mod id_char {
         for x in vec![
             'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','z',
             'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','Z',
-            '1','2','3','4','5','6','7','8','9','0'] {
+            '1','2','3','4','5','6','7','8','9','0', '_'] {
             assert!(
                 is_ident_char(x)
             );

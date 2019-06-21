@@ -11,7 +11,6 @@ use nom::{
 use crate::helpers::*;
 
 
-
 #[derive(Debug, PartialEq, Eq)]
 pub enum Regex {
     Simple{

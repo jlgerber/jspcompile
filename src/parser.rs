@@ -22,3 +22,6 @@ pub use regex::{Regex, parse_regex};
 
 pub mod node;
 pub use node::{Node, parse_node};
+
+pub mod edge;
+//pub use graph::{Graph, parse_graph};
