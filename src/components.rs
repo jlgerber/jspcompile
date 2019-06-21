@@ -103,6 +103,7 @@ impl Node {
 
 }
 
+#[derive(Debug,PartialEq,Eq)]
 pub enum ParseResult {
     Header(Header),
     Regex(Regex),
