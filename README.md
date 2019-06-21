@@ -9,7 +9,7 @@ chars_sd   =  "(DEVL|SHARED|etc|lib|bin|user)"
 show       = "[A-Z]+[A-Z0-9]*" "(REF|SHARED|OUTSOURCE|LOCATIONS)"
 
 [nodes]
-dd  
+dd 
 shows
 show            = $show [ owner: jobsys, perms: 751, varname: DD_SHOW ]      
 refdir          = REF [ volume ]
