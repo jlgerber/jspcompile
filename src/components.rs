@@ -108,6 +108,6 @@ pub enum ParseResult {
     Header(Header),
     Regex(Regex),
     Node(Node),
-    Edge(Edge),
+    Edges(Vec<Edge>),
     Comment(String),
 }

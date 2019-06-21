@@ -16,7 +16,7 @@ use crate::{helpers::*, Edge, ParseResult};
 /// 
 /// produces
 /// ```vec![ Edge::new(foo,bar), Edge::new(bar, bla) ];```
-pub fn parse_edges(input: &str) -> IResult<&str, Vec<ParseResult>> {
+pub fn parse_edges(input: &str) -> IResult<&str, ParseResult> {
     map(
         tuple((
             delimited(space0, variable, space0),
@@ -33,11 +33,11 @@ pub fn parse_edges(input: &str) -> IResult<&str, Vec<ParseResult>> {
             let mut node1 = first;
             for node2 in rest {
                 rval.push(
-                    ParseResult::Edge(Edge::new(node1, node2))
+                    Edge::new(node1, node2)
                 );
                 node1 = node2;
             }
-            rval
+            ParseResult::Edges(rval)
         }
     )(input)
 }
@@ -49,13 +49,13 @@ mod parse_edges {
     #[test]
     fn can_parse_edge() {
         let result = parse_edges(" foo->bar");
-        assert_eq!(result, Ok(("", vec![ParseResult::Edge(Edge::new("foo", "bar"))])));
+        assert_eq!(result, Ok(("", ParseResult::Edges(vec![Edge::new("foo", "bar")]))));
     }
 
     #[test]
     fn can_parse_spaces_in_header_with_space_ending() {
         let result = parse_edges(r#" foo -> bar   "#);
-        assert_eq!(result, Ok(("",vec![ParseResult::Edge(Edge::new("foo", "bar"))])));
+        assert_eq!(result, Ok(("",ParseResult::Edges(vec![Edge::new("foo", "bar")]))));
     }
 
 
@@ -65,10 +65,10 @@ mod parse_edges {
         assert_eq!(
             result, 
             Ok(("",
-                vec![
-                    ParseResult::Edge(Edge::new("foo", "bar")),
-                    ParseResult::Edge(Edge::new("bar", "bla")),
-                ]
+                ParseResult::Edges(vec![
+                    Edge::new("foo", "bar"),
+                    Edge::new("bar", "bla"),
+                ])
         )));
     }
 
@@ -79,11 +79,11 @@ mod parse_edges {
         assert_eq!(
             result, 
             Ok(("",
-                vec![
-                    ParseResult::Edge(Edge::new("foo", "bar")),
-                    ParseResult::Edge(Edge::new("bar", "bla")),
-                    ParseResult::Edge(Edge::new("bla", "flarg")),
-                ]
+                ParseResult::Edges(vec![
+                    Edge::new("foo", "bar"),
+                    Edge::new("bar", "bla"),
+                    Edge::new("bla", "flarg"),
+                ])
         )));
     }
 
@@ -93,12 +93,12 @@ mod parse_edges {
         assert_eq!(
             result, 
             Ok(("",
-                vec![
-                    ParseResult::Edge(Edge::new("foo", "bar")),
-                    ParseResult::Edge(Edge::new("bar", "bla")),
-                    ParseResult::Edge(Edge::new("bla", "flarg")),
-                    ParseResult::Edge(Edge::new("flarg", "picklerick")),
-                ]
+                ParseResult::Edges(vec![
+                    Edge::new("foo", "bar"),
+                    Edge::new("bar", "bla"),
+                    Edge::new("bla", "flarg"),
+                    Edge::new("flarg", "picklerick"),
+                ])
         )));
     }
     
