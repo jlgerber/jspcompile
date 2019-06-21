@@ -28,3 +28,11 @@ pub use edge::{Edge, parse_edges};
 
 pub mod comment;
 pub use comment::parse_comment;
+
+pub enum ParseResult {
+    Header(Header),
+    Regex(Regex),
+    Node(Node),
+    Edge(Edge),
+    Comment(String),
+}

@@ -2,10 +2,9 @@ use nom::{
     IResult,
     branch::alt,
     sequence::{tuple,preceded, delimited},
-    bytes::complete::{tag},
+    //bytes::complete::{tag},
     combinator::{ map, },
-    //error::ErrorKind,
-    character::complete::{char, space0, multispace0, alphanumeric1,},
+    character::complete::{char, space0, multispace0,},// alphanumeric1,},
 };
 
 use crate::helpers::*;
@@ -143,7 +142,8 @@ mod parse_regex_complex {
                     } 
                 ) 
             ) 
-        );    }
+        );    
+    }
 
 
     #[test]
@@ -170,7 +170,7 @@ pub fn parse_regex(input: &str) -> IResult<&str,  Regex> {
 #[cfg(test)]
 mod parse_regex {
     use super::*;
-    use nom::error::ErrorKind;
+    //use nom::error::ErrorKind;
 
     #[test]
     fn can_parse_regex_complex() {
