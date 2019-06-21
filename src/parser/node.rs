@@ -12,10 +12,20 @@ use crate::helpers::*;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Node {
+    /// `rd`
     Simple(String),
-    Pair{name: String, value: String},
-    ReVar{name: String, variable: String},
+
+    /// `rd = RD`
+    Pair{name: String, value: String}, 
+
+    /// `rd = $rd_re`
+    ReVar{name: String, variable: String}, 
+
+    /// `rd = "[a-z]+"`
     RegexSimple{name: String, re: String },
+
+    /// `rd = "[a-z]+" "(foo|bar)"`
+    RegexComplex{name:String, pos: String, neg: String}, 
 }
 
 impl Node {
@@ -50,6 +60,17 @@ impl Node {
         }
     }
 
+    pub fn new_regexcomplex<I>(name: I, pos: I, neg: I) -> Node 
+    where 
+        I:Into<String> 
+    {
+        Node::RegexComplex {
+            name: name.into(),
+            pos: pos.into(),
+            neg: neg.into(),
+        }
+    }
+
 }
 
 
@@ -58,6 +79,7 @@ pub fn parse_node(input: &str) -> IResult<&str, Node> {
     alt((
         parse_node_pair,
         parse_node_revar,
+        parse_node_regexcomplex,
         parse_node_regexsimple,
         parse_node_simple,
     ))
@@ -91,6 +113,12 @@ mod parse_node {
     fn can_parse_node_regexsimple() {
         let result = parse_node(r#"rd = "(foo|bar)" "#);
         assert_eq!(result, Ok( ("", Node::new_regexsimple("rd", "(foo|bar)")) ) ) ;
+    }
+
+    #[test]
+    fn can_parse_node_regexcomplex() {
+        let result = parse_node_regexcomplex(r#"rd = "(foo|bar)" "(bla|mange)" "#);
+        assert_eq!(result, Ok( ("", Node::new_regexcomplex("rd", "(foo|bar)", "(bla|mange)" )) ) ) ;
     }
 }
 
@@ -243,3 +271,45 @@ mod parse_node_regexsimple {
         assert_eq!(result, Ok( ("", Node::new_regexsimple("rd", "[a-zA-Z0-1_-]") ) ) );
     }
 }
+
+
+// parse regex variable node. regex node references a named regex
+// `rd_node =   $rd`
+fn parse_node_regexcomplex(input: &str) -> IResult<&str,  Node> {
+    map ( 
+            tuple((
+                // drops zero or more spaces in front of a variable (upper lower case number _-)
+                preceded(space0, variable),
+                // drop zero or more spaces in front of '='
+                preceded(space0, char('=')), 
+                // drop zero or more spaces around variable preceded by $ and drop zero or more spaces and returns
+                preceded( space0, quoted_regex_str),
+                delimited( space0, quoted_regex_str, multispace0) 
+            )),
+        | item| {
+            let (var,_,pos, neg) = item ;
+             Node::new_regexcomplex(var, pos, neg)
+        } 
+    ) 
+    (input)
+}
+
+#[cfg(test)]
+mod parse_node_regexcomplex {
+    use super::*;
+    //use nom::error::ErrorKind;
+
+    #[test]
+    fn can_parse_node_regexcomplex() {
+        let result = parse_node_regexcomplex(r#"rd = "(foo|bar)" "(bla|mange)" "#);
+        assert_eq!(result, Ok( ("", Node::new_regexcomplex("rd", "(foo|bar)", "(bla|mange)" )) ) ) ;
+    }
+
+    #[test]
+    fn can_parse_node_regexsimplewith_return() {
+        let result = parse_node_regexcomplex(r#" rd = "[a-zA-Z0-1_-]" "(bla|mange)"
+        "#);
+        assert_eq!(result, Ok( ("", Node::new_regexcomplex("rd", "[a-zA-Z0-1_-]","(bla|mange)") ) ) );
+    }
+}
+
