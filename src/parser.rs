@@ -24,4 +24,7 @@ pub mod node;
 pub use node::{Node, parse_node};
 
 pub mod edge;
-//pub use graph::{Graph, parse_graph};
+pub use edge::{Edge, parse_edges};
+
+pub mod comment;
+pub use comment::parse_comment;
