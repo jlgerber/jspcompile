@@ -10,4 +10,4 @@ pub mod statemachine;
 pub use statemachine::{State, StateMachine};
 
 pub mod errors;
-pub use errors::JSPTemplateError;
+pub use errors::{JSPTemplateError, JSPTemplateLineError};

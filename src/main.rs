@@ -25,15 +25,13 @@ fn main() -> io::Result<()> {
     let opt = Opt::from_args();
     
     let file = File::open(opt.input)?;
-    let mut cnt = 0;
     let mut statemachine = StateMachine::new();
     for line in BufReader::new(file).lines() {
         if let Ok(line) = line {
-            cnt += 1;
             match statemachine.parse(&line) {
-                Ok(v) => println!("line: {} {:?}",cnt, v),
+                Ok(v) => println!("line: {} {:?}",statemachine.line(), v),
                 Err(e) => {
-                    println!("Error Parsing Line {}: {:?}",cnt, e);
+                    println!("{:?}",e);
                     std::process::exit(1);
                 },
             }
