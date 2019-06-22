@@ -85,7 +85,7 @@ impl StateMachine {
                             // get the next allowed state from the statemachine
                             let next_valid_state = match self.next_valid_state(){
                                 Ok(a) => a,
-                                Err(e) => return Err(JSPTemplateLineError::from((self.line.get(), input.to_owned(), e))),
+                                Err(e) => return Err(JSPTemplateLineError::from((self.line.get(), input.to_owned(), self.state.clone(), e))),
                             };
 
                             // get the state assocated with the header
@@ -103,6 +103,7 @@ impl StateMachine {
                                     JSPTemplateLineError::from(
                                         (self.line.get(),
                                         input.to_owned(),
+                                        self.state.clone(),
                                         JSPTemplateError::InvalidStateTransition(current_state, new_state))
                                         )
                                     )   
@@ -117,12 +118,12 @@ impl StateMachine {
                     Err(e) => {
                         return Err(
                             JSPTemplateLineError::from(
-                                ( self.line.get(), input.to_owned(), JSPTemplateError::from(e)) )
+                                ( self.line.get(), input.to_owned(), self.state.clone(), JSPTemplateError::from(e)) )
                             );
                     },
                 }
             }, 
-            Err(e) =>    Err(JSPTemplateLineError::from((self.line.get(), input.to_owned(), e))),
+            Err(e) =>    Err(JSPTemplateLineError::from((self.line.get(), input.to_owned(), self.state.clone(), e))),
         }
     }
 

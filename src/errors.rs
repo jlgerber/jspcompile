@@ -26,8 +26,8 @@ pub enum JSPTemplateError {
     #[fail(display = "NomError: {:?}", _0)]
     NomError(String),
 
-    #[fail(display = "ErrorAtLine: {}, Line: {}, Error: {:?}", _0, _1, _2)]
-    ErrorAtLine(usize, String, Box<JSPTemplateError>),
+    #[fail(display = "ErrorAtLine: {}, Line: {}, State: {}, Error: {:?}", _0, _1, _2, _3)]
+    ErrorAtLine(usize, String, State, Box<JSPTemplateError>),
 
     #[fail(display = "{}", _0)]
     IoError(#[cause] io::Error),
@@ -47,22 +47,22 @@ impl From<io::Error> for JSPTemplateError {
 
 impl From<JSPTemplateLineError> for JSPTemplateError {
     fn from(error: JSPTemplateLineError) -> Self {
-        let JSPTemplateLineError::ErrorAtLine(line_num, line, err) = error;
-        JSPTemplateError::ErrorAtLine(line_num, line, Box::new(err))
+        let JSPTemplateLineError::ErrorAtLine(line_num, line, state, err) = error;
+        JSPTemplateError::ErrorAtLine(line_num, line, state, Box::new(err))
     }
 }
 
 /// Wrap JSPTemplateError to provide a line number associated with each error
 #[derive(Debug, Fail)]
 pub enum JSPTemplateLineError {
-    #[fail(display = "Error at line: {} line: {} Error: {:?}", _0, _1, _2)]
-    ErrorAtLine(usize, String, JSPTemplateError)
+    #[fail(display = "Error at line: {} line: {} State: {} Error: {:?}", _0, _1, _2, _3)]
+    ErrorAtLine(usize, String, State, JSPTemplateError)
 }
 
 /// Convert from a JSPTemplateError to a JSPTemplateLineError by 
 /// providing a tuple of ( line number, error ).
-impl From<(usize, String, JSPTemplateError)> for JSPTemplateLineError {
-    fn from(error: (usize, String,  JSPTemplateError) ) -> Self {
-        JSPTemplateLineError::ErrorAtLine(error.0, error.1, error.2)
+impl From<(usize, String, State, JSPTemplateError)> for JSPTemplateLineError {
+    fn from(error: (usize, String, State, JSPTemplateError) ) -> Self {
+        JSPTemplateLineError::ErrorAtLine(error.0, error.1, error.2, error.3)
     }
 } 

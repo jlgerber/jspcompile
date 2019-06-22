@@ -26,20 +26,22 @@ fn main() {
         Ok(_) => (),
         Err(e) => {
             match e {
-                JSPTemplateError::ErrorAtLine(line_num, line, error) => {
+                JSPTemplateError::ErrorAtLine(line_num, line, state, error) => {
                     println!("");
                     let title = "Error Parsing File".red().bold();
-                    let err = "Error".bright_red();
-                    //let err_yellow = "Error".bright_red();
-                    let line_no = "LineNo".bright_red();
-                    let lin = "Line".bright_red();
-                    println!("{}\n\n\t{} {}\n\t{}   {}\n\t{}  {}", 
+                    let error_title = "Error".bright_red();
+                    let line_num_title = "LineNo".bright_red();
+                    let line_title = "Line".bright_red();
+                    let state_title = "State".bright_red();
+                    println!("{}\n\n\t{} {}\n\t{}   {}\n\t{}  {}\n\t{}  {}", 
                         title,
-                        line_no,
+                        line_num_title,
                         line_num.to_string(),
-                        lin, 
-                        line, 
-                        err,        
+                        line_title, 
+                        line,
+                        state_title,
+                        state, 
+                        error_title,        
                         error.to_string());
 
                     println!("")
