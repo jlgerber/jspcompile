@@ -13,7 +13,7 @@ use std::{
     io::BufRead,
     collections::HashMap,
 };
-use jsp::{JGraph, NIndex, Node, NodeType, Regexp};
+use jsp::{JGraph, NIndex, Node, Regexp, jspnode, EntryType, NodeType};
 use log;
 
 #[macro_use]
@@ -100,7 +100,11 @@ impl<'a> Loader<'a> {
     */
     fn process_node(&mut self, node: SNode) -> Result<(), JSPTemplateError> {
         match node {
-            SNode::Simple(ref s) => {}
+            SNode::Simple(ref s) => {
+
+                self.keymap.insert(s.clone(), self.graph.add_node(jspnode!(s.clone())));
+            }
+
             SNode::Pair{ref name, ref value} => {}
             SNode::ReVar{ref name, ref variable} => {}
             SNode::RegexSimple{ref name, ref re} => {}
