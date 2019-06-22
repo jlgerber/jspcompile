@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, self};
 use std::path::PathBuf;
 use jsptemplate::*;
+use colored::*;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "jspcompile", about = "compile a jsptemplate from a jsptemplate. hu?")]
@@ -25,9 +26,22 @@ fn main() {
         Ok(_) => (),
         Err(e) => {
             match e {
-                JSPTemplateError::ErrorAtLine(line, error) => {
+                JSPTemplateError::ErrorAtLine(line_num, line, error) => {
                     println!("");
-                    println!("Error at line: {} - {}",line, error.to_string());
+                    let title = "Error Parsing File".red().bold();
+                    let err = "Error".bright_red();
+                    //let err_yellow = "Error".bright_red();
+                    let line_no = "LineNo".bright_red();
+                    let lin = "Line".bright_red();
+                    println!("{}\n\n\t{} {}\n\t{}   {}\n\t{}  {}", 
+                        title,
+                        line_no,
+                        line_num.to_string(),
+                        lin, 
+                        line, 
+                        err,        
+                        error.to_string());
+
                     println!("")
                 },
                 
