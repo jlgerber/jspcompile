@@ -2,6 +2,7 @@ use failure::Fail;
 use crate::State;
 use nom;
 use std::{io};
+use ext_regex;
 
 #[derive(Debug, Fail)]
 pub enum JSPTemplateError {
@@ -31,6 +32,9 @@ pub enum JSPTemplateError {
 
     #[fail(display = "{}", _0)]
     IoError(#[cause] io::Error),
+
+    #[fail(display = "{}", _0)]
+    RegexError(#[cause] ext_regex::Error),
 }
 
 impl<'a> From<nom::Err<(&'a str, nom::error::ErrorKind)>> for JSPTemplateError {
@@ -52,6 +56,14 @@ impl From<JSPTemplateLineError> for JSPTemplateError {
     }
 }
 
+//std::convert::From<regex::error::Error>
+impl From<ext_regex::Error> for JSPTemplateError {
+    fn from(error: ext_regex::Error) -> Self {
+        JSPTemplateError::RegexError(error)
+    }
+}
+
+
 /// Wrap JSPTemplateError to provide a line number associated with each error
 #[derive(Debug, Fail)]
 pub enum JSPTemplateLineError {
@@ -66,3 +78,4 @@ impl From<(usize, String, State, JSPTemplateError)> for JSPTemplateLineError {
         JSPTemplateLineError::ErrorAtLine(error.0, error.1, error.2, error.3)
     }
 } 
+

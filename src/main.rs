@@ -4,14 +4,20 @@ use std::io::{BufReader};
 use std::{
     path::PathBuf,
 };
-
+use log::{ LevelFilter, self };
+use chrono;
+use colored::Colorize;
+use fern::{ colors::{Color, ColoredLevelConfig}, self} ;
 use jsptemplate::{JSPTemplateError, Loader, State, RegexMap, JGraphKeyMap};
-use colored::*;
 use jsp::{JGraph, NIndex};
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "jspcompile", about = "Compile a jsptemplate from a jspt file")]
 struct Opt {
+    /// Set logging level to one of trace, debug, info, warn, error
+    #[structopt( short = "l", long = "level", default_value = "warn" )]
+    level: String,
+
     /// Activate debug mode
     #[structopt(short = "d", long = "debug")]
     debug: bool,
@@ -45,7 +51,9 @@ fn main() {
 
 
 fn doit() -> Result<(), JSPTemplateError> {
-    let opt = Opt::from_args();
+    //let opt = Opt::from_args();
+    let (opt, level) = setup_cli();
+    setup_logger(level).unwrap();
     
     let file = File::open(opt.input)?;
     let bufreader =  BufReader::new(file);
@@ -55,7 +63,7 @@ fn doit() -> Result<(), JSPTemplateError> {
     let mut keymap = JGraphKeyMap::new();
     let mut regexmap = RegexMap::new();
 
-    let loader = Loader::new(&mut graph, &mut keymap, &mut regexmap);
+    let mut loader = Loader::new(&mut graph, &mut keymap, &mut regexmap);
     loader.load(bufreader)?;
     Ok(())
 }
@@ -86,4 +94,45 @@ fn display_formatted_error(
         error.to_string());
 
     println!("")
+}
+
+
+#[inline]
+fn setup_logger(level: log::LevelFilter) -> Result<(), fern::InitError> {
+    let  colors = ColoredLevelConfig::new()
+        .error(Color::Red)
+        .warn(Color::Yellow)
+        .info(Color::Green)
+        .debug(Color::Cyan)
+        .trace(Color::BrightCyan);;
+
+    fern::Dispatch::new()
+        .format(move |out, message, record| {
+            out.finish(format_args!(
+                "{}[{}][{}] {}",
+                chrono::Local::now().format("[%Y-%m-%d][%H:%M:%S]"),
+                record.target(),
+                colors.color(record.level()),
+                message
+            ))
+        })
+        .level(level)
+        .chain(std::io::stdout())
+        .apply()?;
+    Ok(())
+}
+
+#[inline]
+fn setup_cli() -> (Opt, log::LevelFilter) {
+    let args = Opt::from_args();
+    let level = match args.level.as_str() {
+        "trace" => LevelFilter::Trace,
+        "debug" => LevelFilter::Debug,
+        "info"  => LevelFilter::Info,
+        "warn"  | "warning" => LevelFilter::Warn,
+        "err" | "error" => LevelFilter::Error,
+        _ => LevelFilter::Warn,
+    };
+
+    (args, level)
 }
