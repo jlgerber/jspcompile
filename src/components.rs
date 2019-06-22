@@ -20,8 +20,8 @@ impl Edge {
 #[derive(Debug, PartialEq, Eq)]
 pub enum Header {
     Regex,
-    Nodes,
-    Graph,
+    Node,
+    Edge,
     Unknown(String),
 }
 
@@ -110,4 +110,5 @@ pub enum ParseResult {
     Node(Node),
     Edges(Vec<Edge>),
     Comment(String),
+    Empty,
 }

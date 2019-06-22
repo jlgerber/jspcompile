@@ -1,40 +1,47 @@
-use std::io::prelude::*;
-use std::io::{self, SeekFrom};
-use std::io::Cursor;
+use structopt::StructOpt;
+use std::fs::File;
+use std::io::{BufRead, BufReader, self};
+use nom::IResult;
+use std::path::PathBuf;
+use jsptemplate::*;
 
-const foo : &'static str = r#" 
-[regex]
-num_under =   "[0-9_]+"
-quicktimes =  "quicktimes"
-qtsubdir   =  "[0-9_]+" 
-doc_sd     =  "(agency|director_treatments|vfx_methodology|schedules|scripts|storyboards)"
-chars_sd   =  "(DEVL|SHARED|etc|lib|bin|user)"
-level       = "[A-Z]+[A-Z0-9]*" "(REF|SHARED|OUTSOURCE|LOCATIONS)"
+#[derive(Debug, StructOpt)]
+#[structopt(name = "jspcompile", about = "compile a jsptemplate from a jsptemplate. hu?")]
+struct Opt {
+    /// Activate debug mode
+    #[structopt(short = "d", long = "debug")]
+    debug: bool,
 
-[nodes]
-dd  
-shows
-show            = $level   
-seq             = $level 
-shot            = $level 
-refdir          = REF 
-shared          = SHARED
-img             = IMG
-quickimes       = $quicktimes 
-qtsubdir        = $qtsubdir
-clientvault     = CLIENT_VAULT
-clientvault_sd  = "(incoming|outgoing)"
-clientvault_ssd = "[0-9_]+"
-
-[graph] 
-dd -> refdir -> quicktimes
-dd -> shows -> show -> sequence -> shot
-# speculative shared -> img | model | anim | fx 
-show -> shared
-seq -> shared
-shot -> shared
-"#;
-
-fn main() {
-    println!("Hello, world!");
+    /// Input file
+    #[structopt(parse(from_os_str))]
+    input: PathBuf,
+    
+    /// Output file, stdout if not present
+    #[structopt(parse(from_os_str))]
+    output: Option<PathBuf>,
 }
+
+
+fn main() -> io::Result<()> {
+    let opt = Opt::from_args();
+    
+    let file = File::open(opt.input)?;
+    let mut cnt = 0;
+    let mut statemachine = StateMachine::new();
+    for line in BufReader::new(file).lines() {
+        if let Ok(line) = line {
+            cnt += 1;
+            match statemachine.parse(&line) {
+                Ok(v) => println!("line: {} {:?}",cnt, v),
+                Err(e) => {
+                    println!("Error Parsing Line {}: {:?}",cnt, e);
+                    std::process::exit(1);
+                },
+            }
+        } 
+    }
+
+    Ok(())
+}
+
+

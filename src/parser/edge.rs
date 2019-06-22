@@ -54,7 +54,7 @@ mod parse_edges {
 
     #[test]
     fn can_parse_spaces_in_header_with_space_ending() {
-        let result = parse_edges(r#" foo -> bar   "#);
+        let result = parse_edges(r#"foo -> bar  "#);
         assert_eq!(result, Ok(("",ParseResult::Edges(vec![Edge::new("foo", "bar")]))));
     }
 

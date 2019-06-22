@@ -59,7 +59,6 @@ fn parse_regex_simple(input: &str) -> IResult<&str,  ParseResult> {
                 delimited( space0, quoted_regex_str, multispace0) 
             )),
         | item| {
-            println!("here");
             let (variable,_,re) = item ;
              ParseResult::Regex(Regex::Simple{name: variable.to_string(), value: re.to_string()})
         } 

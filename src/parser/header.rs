@@ -22,8 +22,8 @@ pub fn parse_section_header(input: &str) -> IResult<&str, ParseResult> {
             let (_,header,_) = item ;
             match header {
                 "regex" | "regexp" => ParseResult::Header(Header::Regex),
-                "nodes" | "node" => ParseResult::Header(Header::Nodes),
-                "graph" => ParseResult::Header(Header::Graph),
+                "nodes" | "node" => ParseResult::Header(Header::Node),
+                "graph" => ParseResult::Header(Header::Edge),
                 _ => ParseResult::Header(Header::Unknown(header.to_string())),
             }
         } 
@@ -64,19 +64,19 @@ mod section_header {
     #[test]
     fn can_parse_no_space_nodes() {
         let result = parse_section_header("[nodes]");
-        assert_eq!(result, Ok(("",ParseResult::Header(Header::Nodes))));
+        assert_eq!(result, Ok(("",ParseResult::Header(Header::Node))));
     }
 
     #[test]
     fn can_parse_no_space_node() {
         let result = parse_section_header("[node]");
-        assert_eq!(result, Ok(("",ParseResult::Header(Header::Nodes))));
+        assert_eq!(result, Ok(("",ParseResult::Header(Header::Node))));
     }
 
     #[test]
     fn can_parse_no_space_graph() {
         let result = parse_section_header("[graph]");
-        assert_eq!(result, Ok(("",ParseResult::Header(Header::Graph))));
+        assert_eq!(result, Ok(("",ParseResult::Header(Header::Edge))));
     }
 
     #[test]
