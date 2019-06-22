@@ -1,8 +1,11 @@
 use structopt::StructOpt;
 use std::fs::File;
 use std::io::{BufReader};
-use std::path::PathBuf;
-use jsptemplate::*;
+use std::{
+    path::PathBuf,
+};
+
+use jsptemplate::{JSPTemplateError, Loader, State, RegexMap, JGraphKeyMap};
 use colored::*;
 use jsp::{JGraph, NIndex};
 

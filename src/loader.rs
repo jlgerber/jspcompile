@@ -3,8 +3,14 @@ use crate::{
     //JSPTemplateLineError,
     JSPTemplateError,
 };
-use std::io::BufRead;
-use jsp::{JGraph};
+use std::{
+    io::BufRead,
+    collections::HashMap,
+};
+use jsp::{JGraph, NIndex};
+
+pub type JGraphKeyMap = HashMap<String, NIndex>;
+pub type RegexMap     = HashMap<String, String>;
 
 pub struct Loader<'a> {
     graph: &'a mut JGraph,

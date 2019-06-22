@@ -13,4 +13,4 @@ pub mod errors;
 pub use errors::{JSPTemplateError, JSPTemplateLineError};
 
 pub mod loader;
-pub use loader::Loader;
+pub use loader::{Loader, JGraphKeyMap, RegexMap};
