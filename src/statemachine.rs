@@ -22,6 +22,7 @@ pub struct StateMachine {
 }
 
 impl StateMachine {
+
     pub fn new() -> StateMachine {
         StateMachine {
             state: State::Start,
@@ -51,20 +52,28 @@ impl StateMachine {
                 // inner Result determines whether parsing of line is ok
                 match result {
                     Ok((_, value)) => {
-                        if let ParseResult::Header(ref new_state) = value {
+                        // If we encounter a header, we transition to the state
+                        // associated with the header. We only allow valid transitions as 
+                        // dictated by the next_state method.
+                        if let ParseResult::Header(ref header) = value {
                             let current_state = self.state.clone();
-                            // get the expected next state from the
-                            let next_state = self.next_state()?;
-                            let new_state = match new_state {
+                            // get the next allowed state from the statemachine
+                            let next_valid_state = self.next_valid_state()?;
+
+                            // get the state assocated with the header
+                            let new_state = match header {
                                 Header::Node  =>  State::NodeParsing,
                                 Header::Edge  =>  State::EdgeParsing,
                                 Header::Regex =>  State::RegexParsing,
                                 Header::Unknown(_) =>  State::Error,
                             };
 
-                            if next_state != new_state {
+                            // make sure that the new state matches the next valid state in the 
+                            // statemachine
+                            if next_valid_state != new_state {
                                 return Err(JSPTemplateError::InvalidStateTransition(current_state, new_state))   
                             }
+                            
                             // set the new state if the transition is a valid one to make
                             self.state = new_state;
                         }
@@ -81,7 +90,7 @@ impl StateMachine {
     }
 
     // retrieve the next state in the statemachine given the current state
-    fn next_state(&self) -> Result<State, JSPTemplateError> {
+    fn next_valid_state(&self) -> Result<State, JSPTemplateError> {
         match self.state {
             State::Start        => Ok(State::RegexParsing),
             State::RegexParsing => Ok(State::NodeParsing),
