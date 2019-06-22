@@ -247,7 +247,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "jsp"
 version = "0.34.0"
-source = "git+https://github.com/jlgerber/jobsyspolice.git?branch=regex_new#429418e61b8b30e0a1f0ae203351be6a50e5bee3"
+source = "git+https://github.com/jlgerber/jobsyspolice.git?branch=regex_new#ad485b11d51fabbac1577f9e2ad0e3dabebf7e05"
 dependencies = [
  "ascii 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",

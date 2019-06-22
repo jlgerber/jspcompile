@@ -9,7 +9,7 @@ use chrono;
 use colored::Colorize;
 use fern::{ colors::{Color, ColoredLevelConfig}, self} ;
 use jsptemplate::{JSPTemplateError, Loader, State, RegexMap, JGraphKeyMap};
-use jsp::{JGraph, NIndex};
+use jsp::{JGraph, NIndex, diskutils};
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "jspcompile", about = "Compile a jsptemplate from a jspt file")]
@@ -52,7 +52,7 @@ fn main() {
 
 fn doit() -> Result<(), JSPTemplateError> {
     //let opt = Opt::from_args();
-    let (opt, level) = setup_cli();
+    let (mut opt, level) = setup_cli();
     setup_logger(level).unwrap();
     
     let file = File::open(opt.input)?;
@@ -65,6 +65,9 @@ fn doit() -> Result<(), JSPTemplateError> {
 
     let mut loader = Loader::new(&mut graph, &mut keymap, &mut regexmap);
     loader.load(bufreader)?;
+    if let Some(ref mut output) = opt.output {
+        diskutils::write_template(output, &graph);
+    }
     Ok(())
 }
 
