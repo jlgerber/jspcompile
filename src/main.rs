@@ -27,24 +27,7 @@ fn main() {
         Err(e) => {
             match e {
                 JSPTemplateError::ErrorAtLine(line_num, line, state, error) => {
-                    println!("");
-                    let title = "Error Parsing File".red().bold();
-                    let error_title = "Error".bright_red();
-                    let line_num_title = "LineNo".bright_red();
-                    let line_title = "Line".bright_red();
-                    let state_title = "State".bright_red();
-                    println!("{}\n\n\t{} {}\n\t{}   {}\n\t{}  {}\n\t{}  {}", 
-                        title,
-                        line_num_title,
-                        line_num.to_string(),
-                        line_title, 
-                        line,
-                        state_title,
-                        state, 
-                        error_title,        
-                        error.to_string());
-
-                    println!("")
+                    display_formatted_error(line_num, &line, &state, error);
                 },
                 
                 _ => println!("{}", e.to_string()),
@@ -66,3 +49,29 @@ fn doit() -> Result<(), JSPTemplateError> {
 }
 
 
+#[inline]
+fn display_formatted_error(
+    line_num: usize, 
+    line: &str, 
+    state: &State, 
+    error: Box<JSPTemplateError>
+) {
+    println!("");
+    let title = "Error Parsing File".red().bold();
+    let error_title = "Error".bright_red();
+    let line_num_title = "LineNo".bright_red();
+    let line_title = "Line".bright_red();
+    let state_title = "State".bright_red();
+    println!("{}\n\n\t{} {}\n\t{}   {}\n\t{}  {}\n\t{}  {}", 
+        title,
+        line_num_title,
+        line_num.to_string(),
+        line_title, 
+        line,
+        state_title,
+        state, 
+        error_title,        
+        error.to_string());
+
+    println!("")
+}
