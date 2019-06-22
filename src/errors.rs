@@ -38,6 +38,9 @@ pub enum JSPTemplateError {
 
     #[fail(display = "Regex Map Lookup failed for: {}", _0)]
     RegexMapLookupError(String),
+
+    #[fail(display = "key Map Lookup failed for: {}", _0)]
+    KeyMapLookupError(String),
 }
 
 impl<'a> From<nom::Err<(&'a str, nom::error::ErrorKind)>> for JSPTemplateError {

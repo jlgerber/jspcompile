@@ -18,7 +18,7 @@ shot            = $level
 refdir          = REF 
 shared          = SHARED
 img             = IMG
-quickimes       = $quicktimes 
+quicktimes      = $quicktimes 
 qtsubdir        = $qtsubdir
 clientvault     = CLIENT_VAULT
     
@@ -33,7 +33,7 @@ dd -> refdir -> quicktimes
 
 # each pair of nodes define an edge. Notice that we 
 # are not limited to an edge per line
-dd -> shows -> show -> sequence -> shot
+dd -> shows -> show -> seq -> shot
 
 # speculative shared -> img | model | anim | fx 
 show -> shared

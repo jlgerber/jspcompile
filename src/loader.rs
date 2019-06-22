@@ -69,8 +69,10 @@ impl<'a> Loader<'a> {
                                 log::info!("line: {} {:?}", statemachine.line_number(), regex);
                                 self.process_regex(regex)?;
                             }
-                            ParseResult::Edges(edges) => {log::info!("line: {} {:?}", statemachine.line_number(), edges)}
-                           // _ => println!("line: {} {:?}",statemachine.line_number(), v)
+                            ParseResult::Edges(edges) => {
+                                log::info!("line: {} {:?}", statemachine.line_number(), edges);
+                                self.process_edges(edges)?;
+                            }
                         }
                     },
                     Err(e) => {
@@ -82,22 +84,17 @@ impl<'a> Loader<'a> {
         Ok(())
     }
 
-    /*
-     /// `rd`
-    Simple(String),
+ #[inline]
+    fn process_edges(&mut self, edges: Vec<Edge>) -> Result<(), JSPTemplateError> {
+        for edge in edges {
+            let from_node = self.keymap.get(&edge.from).ok_or(JSPTemplateError::KeyMapLookupError(edge.from.clone()))?;
+            let to_node = self.keymap.get(&edge.to).ok_or(JSPTemplateError::KeyMapLookupError(edge.to.clone()))?;
+            self.graph.extend_with_edges(&[(from_node.clone(), to_node.clone())]);
+        }
+        Ok(())
+    }
 
-    /// `rd = RD`
-    Pair{name: String, value: String}, 
-
-    /// `rd = $rd_re`
-    ReVar{name: String, variable: String}, 
-
-    /// `rd = "[a-z]+"`
-    RegexSimple{name: String, re: String },
-
-    /// `rd = "[a-z]+" "(foo|bar)"`
-    RegexComplex{name:String, pos: String, neg: String}, 
-    */
+    #[inline]
     fn process_node(&mut self, node: SNode) -> Result<(), JSPTemplateError> {
         match node {
             // `rd`
@@ -110,7 +107,9 @@ impl<'a> Loader<'a> {
             }
             // `rd = $rd_re`
             SNode::ReVar{ref name, ref variable} => {
-                let var = self.regexmap.get(variable).ok_or(JSPTemplateError::RegexMapLookupError(variable.clone()))?;
+                let var = self.regexmap.get(variable).ok_or(
+                    JSPTemplateError::RegexMapLookupError(variable.clone()
+                ))?;
                 self.keymap.insert(
                     name.clone(), 
                     self.graph.add_node( 
@@ -122,6 +121,7 @@ impl<'a> Loader<'a> {
                     )
                 );
             } 
+            // `rd = "[a-z]+"`
             SNode::RegexSimple{ref name, ref re} => {
                 let regx = Regexp::new(re.as_str())?;
                 self.keymap.insert(
@@ -135,6 +135,7 @@ impl<'a> Loader<'a> {
                     )
                 );
             }
+            // `rd = "[a-z]+" "(foo|bar)"`
             SNode::RegexComplex{ref name, ref pos, ref neg} => {
                 let regx_pos = Regexp::new(pos.as_str())?;
                 let regx_neg = Regexp::new(neg.as_str())?;
