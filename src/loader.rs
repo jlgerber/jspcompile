@@ -70,7 +70,7 @@ impl<'a> Loader<'a> {
                                 self.process_regex(regex)?;
                             }
                             ParseResult::Edges(edges) => {log::info!("line: {} {:?}", statemachine.line_number(), edges)}
-                            _ => println!("line: {} {:?}",statemachine.line_number(), v)
+                           // _ => println!("line: {} {:?}",statemachine.line_number(), v)
                         }
                     },
                     Err(e) => {
@@ -122,8 +122,33 @@ impl<'a> Loader<'a> {
                     )
                 );
             } 
-            SNode::RegexSimple{ref name, ref re} => {}
-            SNode::RegexComplex{ref name, ref pos, ref neg} => {}
+            SNode::RegexSimple{ref name, ref re} => {
+                let regx = Regexp::new(re.as_str())?;
+                self.keymap.insert(
+                    name.clone(), 
+                    self.graph.add_node( 
+                        Node::new_simple(
+                            NodeType::new_regex( name.clone(), regx, None),
+                            EntryType::Directory,
+                            Metadata::new()
+                        )
+                    )
+                );
+            }
+            SNode::RegexComplex{ref name, ref pos, ref neg} => {
+                let regx_pos = Regexp::new(pos.as_str())?;
+                let regx_neg = Regexp::new(neg.as_str())?;
+                self.keymap.insert(
+                    name.clone(), 
+                    self.graph.add_node( 
+                        Node::new_simple(
+                            NodeType::new_regex( name.clone(), regx_pos, Some(regx_neg)),
+                            EntryType::Directory,
+                            Metadata::new()
+                        )
+                    )
+                );
+            }
         };
 
         Ok(())
