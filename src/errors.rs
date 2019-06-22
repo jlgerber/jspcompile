@@ -1,7 +1,7 @@
 use failure::Fail;
 use crate::State;
 use nom;
-use std::{io};
+use std::{io, path::PathBuf};
 use ext_regex;
 
 #[derive(Debug, Fail)]
@@ -41,6 +41,9 @@ pub enum JSPTemplateError {
 
     #[fail(display = "key Map Lookup failed for: {}", _0)]
     KeyMapLookupError(String),
+
+    #[fail(display = "File: {:?} does not exist or we lack permissions to access it", _0)]
+    InaccesibleFileError(PathBuf),
 }
 
 impl<'a> From<nom::Err<(&'a str, nom::error::ErrorKind)>> for JSPTemplateError {

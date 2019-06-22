@@ -41,11 +41,12 @@ fn main() {
                     display_formatted_error(line_num, &line, &state, error);
                 },
                 
-                _ => println!("{}", e.to_string()),
+                _ => display_error(e),//println!("{}", e.to_string()),
             }
             
             std::process::exit(1);
-        }
+        },
+    
     }
 }
 
@@ -54,7 +55,13 @@ fn doit() -> Result<(), JSPTemplateError> {
     //let opt = Opt::from_args();
     let (mut opt, level) = setup_cli();
     setup_logger(level).unwrap();
-    
+
+    if !opt.input.exists() {
+        log::error!("File {:?} does not exist or we lack permissions to access it. Exiting.", &opt.input);
+        return Err(JSPTemplateError::InaccesibleFileError(opt.input.clone()));
+        //std::process::exit(1);
+    }
+
     let file = File::open(opt.input)?;
     let bufreader =  BufReader::new(file);
 
@@ -71,6 +78,15 @@ fn doit() -> Result<(), JSPTemplateError> {
     Ok(())
 }
 
+#[inline]
+fn display_error(
+    error: JSPTemplateError
+) {
+    println!("");
+    println!("{}", "Error".red().bold());
+    println!("\n\t{}", error.to_string());
+    println!("");
+}
 
 #[inline]
 fn display_formatted_error(
