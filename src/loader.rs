@@ -107,7 +107,7 @@ impl<'a> Loader<'a> {
             SNode::RegexComplex{ref name, ref pos, ref neg} => {}
         };
 
-        Err(JSPTemplateError::Placeholder)
+        Ok(())
     }
 
     // match against the various flavors or regex and construct Regex objects in the regexmap store
