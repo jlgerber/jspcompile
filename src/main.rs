@@ -1,7 +1,6 @@
 use structopt::StructOpt;
 use std::fs::File;
 use std::io::{BufRead, BufReader, self};
-use nom::IResult;
 use std::path::PathBuf;
 use jsptemplate::*;
 

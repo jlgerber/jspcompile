@@ -13,14 +13,15 @@ pub enum State {
 
 impl State {
 
+    // retrieve the next state 
     fn next(&self) -> Result<State,JSPTemplateError> {
         match self {
             State::Start => Ok(State::RegexParsing),
             State::RegexParsing => Ok(State::NodeParsing),
             State::NodeParsing => Ok(State::EdgeParsing),
             State::EdgeParsing => Ok(State::Done),
-            State::Done => Err(JSPTemplateError::InvalidStateTransition(State::Done, State::Done)),
-            State::Error => Err(JSPTemplateError::InvalidStateTransition(State::Error, State::Error))
+            State::Done => Err(JSPTemplateError::NoValidNextState(State::Done)),
+            State::Error => Err(JSPTemplateError::NoValidNextState(State::Error))
         }
     }
 }
@@ -43,6 +44,8 @@ impl StateMachine {
         }
     }
 
+    /// Parse teh current line of input. If the input is a Header, transition
+    /// the statemachine to the next valid state.
     pub fn parse(&mut self, input: &str) -> Result<ParseResult, JSPTemplateError> {
 
         let cstate = match self.state {
@@ -56,27 +59,32 @@ impl StateMachine {
 
         match cstate {
             Ok(result) => {
-                if let Ok((_, value)) = result {
-                    if let ParseResult::Header(ref new_state) = value {
-                        let current_state = self.state.clone();
-                        let next_state = self.state.next()?;
-                        let new_state = match new_state {
-                            Header::Node  =>  State::NodeParsing,
-                            Header::Edge  =>  State::EdgeParsing,
-                            Header::Regex =>  State::RegexParsing,
-                            Header::Unknown(_) =>  State::Error,
-                        };
+                // grabbing from IResult
+                //if let Ok((_, value)) = result {
+                match result {
+                    Ok((_, value)) => {
+                        if let ParseResult::Header(ref new_state) = value {
+                            let current_state = self.state.clone();
+                            let next_state = self.state.next()?;
+                            let new_state = match new_state {
+                                Header::Node  =>  State::NodeParsing,
+                                Header::Edge  =>  State::EdgeParsing,
+                                Header::Regex =>  State::RegexParsing,
+                                Header::Unknown(_) =>  State::Error,
+                            };
 
-                        if next_state != new_state {
-                            return Err(JSPTemplateError::InvalidStateTransition(current_state, new_state))   
+                            if next_state != new_state {
+                                return Err(JSPTemplateError::InvalidStateTransition(current_state, new_state))   
+                            }
+
+                            self.state = new_state;
                         }
 
-                        self.state = new_state;
-                    }
-
-                    return Ok(value);
-                } else {
-                    return Err(JSPTemplateError::ErrorState);
+                        return Ok(value);
+                    },  
+                    Err(e) => {
+                        return Err(JSPTemplateError::from(e));
+                    },
                 }
             }, 
             Err(e) =>    Err(e),
