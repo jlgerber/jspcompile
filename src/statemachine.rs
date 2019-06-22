@@ -53,6 +53,11 @@ impl StateMachine {
     pub fn line_number(&self) -> usize {
         self.line.get()
     }
+
+    /// Retrieve the state reference
+    pub fn state(&self) -> &State {
+        &self.state
+    }
     /// Parse teh current line of input. If the input is a Header, transition
     /// the statemachine to the next valid state.
     pub fn parse(&mut self, input: &str) -> Result<ParseResult, JSPTemplateLineError> {

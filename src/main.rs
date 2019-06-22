@@ -1,15 +1,12 @@
-use structopt::StructOpt;
-use std::fs::File;
-use std::io::{BufReader};
-use std::{
-    path::PathBuf,
-};
-use log::{ LevelFilter, self };
 use chrono;
 use colored::Colorize;
+use log::{ LevelFilter, self};
 use fern::{ colors::{Color, ColoredLevelConfig}, self} ;
+use jsp::{JGraph, diskutils};
 use jsptemplate::{JSPTemplateError, Loader, State, RegexMap, JGraphKeyMap};
-use jsp::{JGraph, NIndex, diskutils};
+use std::{fs::File,io::BufReader, path::PathBuf};
+use structopt::StructOpt;
+
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "jspcompile", about = "Compile a jsptemplate from a jspt file")]
@@ -41,9 +38,8 @@ fn main() {
                     display_formatted_error(line_num, &line, &state, error);
                 },
                 
-                _ => display_error(e),//println!("{}", e.to_string()),
+                _ => display_error(e),
             }
-            
             std::process::exit(1);
         },
     
@@ -52,14 +48,12 @@ fn main() {
 
 
 fn doit() -> Result<(), JSPTemplateError> {
-    //let opt = Opt::from_args();
     let (mut opt, level) = setup_cli();
     setup_logger(level).unwrap();
 
     if !opt.input.exists() {
         log::error!("File {:?} does not exist or we lack permissions to access it. Exiting.", &opt.input);
         return Err(JSPTemplateError::InaccesibleFileError(opt.input.clone()));
-        //std::process::exit(1);
     }
 
     let file = File::open(opt.input)?;
@@ -78,7 +72,6 @@ fn doit() -> Result<(), JSPTemplateError> {
     Ok(())
 }
 
-#[inline]
 fn display_error(
     error: JSPTemplateError
 ) {
@@ -88,7 +81,6 @@ fn display_error(
     println!("");
 }
 
-#[inline]
 fn display_formatted_error(
     line_num: usize, 
     line: &str, 
@@ -115,8 +107,6 @@ fn display_formatted_error(
     println!("")
 }
 
-
-#[inline]
 fn setup_logger(level: log::LevelFilter) -> Result<(), fern::InitError> {
     let  colors = ColoredLevelConfig::new()
         .error(Color::Red)
@@ -141,7 +131,6 @@ fn setup_logger(level: log::LevelFilter) -> Result<(), fern::InitError> {
     Ok(())
 }
 
-#[inline]
 fn setup_cli() -> (Opt, log::LevelFilter) {
     let args = Opt::from_args();
     let level = match args.level.as_str() {

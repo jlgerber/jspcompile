@@ -1,6 +1,6 @@
 use crate::{
     StateMachine,
-    //JSPTemplateLineError,
+    JSPTemplateLineError,
     JSPTemplateError,
     State,
     ParseResult,
@@ -62,7 +62,7 @@ impl<'a> Loader<'a> {
 
                             ParseResult::Node(node) => {
                                 log::info!("line: {} {:?}", statemachine.line_number(), node);
-                                self.process_node(node)?;
+                                self.process_node(node, line.as_str(), &statemachine)?;
                             }
 
                             ParseResult::Regex(regex) => {
@@ -71,7 +71,7 @@ impl<'a> Loader<'a> {
                             }
                             ParseResult::Edges(edges) => {
                                 log::info!("line: {} {:?}", statemachine.line_number(), edges);
-                                self.process_edges(edges)?;
+                                self.process_edges(edges, line.as_str(), &statemachine)?;
                             }
                         }
                     },
@@ -84,18 +84,30 @@ impl<'a> Loader<'a> {
         Ok(())
     }
 
- #[inline]
-    fn process_edges(&mut self, edges: Vec<Edge>) -> Result<(), JSPTemplateError> {
+    fn process_edges(&mut self, edges: Vec<Edge>, line: &str, statemachine: &StateMachine) -> Result<(), JSPTemplateError> {
         for edge in edges {
-            let from_node = self.keymap.get(&edge.from).ok_or(JSPTemplateError::KeyMapLookupError(edge.from.clone()))?;
-            let to_node = self.keymap.get(&edge.to).ok_or(JSPTemplateError::KeyMapLookupError(edge.to.clone()))?;
+            let from_node = self.keymap.get(&edge.from).ok_or(
+                JSPTemplateLineError::from((
+                    statemachine.line_number(),
+                    line.to_owned(),
+                    statemachine.state().clone(),
+                    JSPTemplateError::KeyMapLookupError(edge.from.clone())
+                ))
+            )?;
+            let to_node = self.keymap.get(&edge.to).ok_or(
+                JSPTemplateLineError::from((
+                    statemachine.line_number(),
+                    line.to_owned(),
+                    statemachine.state().clone(),
+                    JSPTemplateError::KeyMapLookupError(edge.to.clone())
+                ))
+            )?;
             self.graph.extend_with_edges(&[(from_node.clone(), to_node.clone())]);
         }
         Ok(())
     }
 
-    #[inline]
-    fn process_node(&mut self, node: SNode) -> Result<(), JSPTemplateError> {
+    fn process_node(&mut self, node: SNode, line: &str, statemachine: &StateMachine) -> Result<(), JSPTemplateError> {
         match node {
             // `rd`
             SNode::Simple(ref s) => {
@@ -108,7 +120,12 @@ impl<'a> Loader<'a> {
             // `rd = $rd_re`
             SNode::ReVar{ref name, ref variable} => {
                 let var = self.regexmap.get(variable).ok_or(
-                    JSPTemplateError::RegexMapLookupError(variable.clone()
+                    JSPTemplateLineError::from((
+                        statemachine.line_number(),
+                        line.to_owned(),
+                        statemachine.state().clone(),
+                        JSPTemplateError::RegexMapLookupError(variable.clone()
+                    ))
                 ))?;
                 self.keymap.insert(
                     name.clone(), 
