@@ -35,6 +35,9 @@ pub enum JSPTemplateError {
 
     #[fail(display = "{}", _0)]
     RegexError(#[cause] ext_regex::Error),
+
+    #[fail(display = "Regex Map Lookup failed for: {}", _0)]
+    RegexMapLookupError(String),
 }
 
 impl<'a> From<nom::Err<(&'a str, nom::error::ErrorKind)>> for JSPTemplateError {

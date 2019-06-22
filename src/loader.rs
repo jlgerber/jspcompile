@@ -13,7 +13,7 @@ use std::{
     io::BufRead,
     collections::HashMap,
 };
-use jsp::{JGraph, NIndex, Node, Regexp, jspnode, EntryType, NodeType};
+use jsp::{JGraph, NIndex, Node, Regexp, jspnode, EntryType, NodeType, Metadata};
 use log;
 
 #[macro_use]
@@ -100,13 +100,28 @@ impl<'a> Loader<'a> {
     */
     fn process_node(&mut self, node: SNode) -> Result<(), JSPTemplateError> {
         match node {
+            // `rd`
             SNode::Simple(ref s) => {
-
                 self.keymap.insert(s.clone(), self.graph.add_node(jspnode!(s.clone())));
             }
-
-            SNode::Pair{ref name, ref value} => {}
-            SNode::ReVar{ref name, ref variable} => {}
+            // `rd = RD`
+            SNode::Pair{ref name, ref value} => {
+                self.keymap.insert(name.clone(), self.graph.add_node(jspnode!(value.clone())));
+            }
+            // `rd = $rd_re`
+            SNode::ReVar{ref name, ref variable} => {
+                let var = self.regexmap.get(variable).ok_or(JSPTemplateError::RegexMapLookupError(variable.clone()))?;
+                self.keymap.insert(
+                    name.clone(), 
+                    self.graph.add_node( 
+                        Node::new_simple(
+                            var.clone(),
+                            EntryType::Directory,
+                            Metadata::new()
+                        )
+                    )
+                );
+            } 
             SNode::RegexSimple{ref name, ref re} => {}
             SNode::RegexComplex{ref name, ref pos, ref neg} => {}
         };
