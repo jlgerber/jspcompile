@@ -1,6 +1,6 @@
 use structopt::StructOpt;
 use std::fs::File;
-use std::io::{BufRead, BufReader, self};
+use std::io::{BufReader};
 use std::path::PathBuf;
 use jsptemplate::*;
 use colored::*;
@@ -60,7 +60,8 @@ fn doit() -> Result<(), JSPTemplateError> {
     
     let file = File::open(opt.input)?;
     let bufreader =  BufReader::new(file);
-    Loader::load(bufreader)?;
+    let loader = Loader::new();
+    loader.load(bufreader)?;
     Ok(())
 }
 

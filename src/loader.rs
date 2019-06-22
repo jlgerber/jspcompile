@@ -1,6 +1,6 @@
 use crate::{
     StateMachine,
-    JSPTemplateLineError,
+    //JSPTemplateLineError,
     JSPTemplateError,
 };
 use std::io::BufRead;
@@ -8,8 +8,12 @@ use std::io::BufRead;
 pub struct Loader {}
 
 impl Loader {
+    pub fn new() -> Self {
+        Self {}
+    }
+
     /// Load 
-    pub fn load<R>(reader: R) -> Result<(), JSPTemplateError> 
+    pub fn load<R>(&self, reader: R) -> Result<(), JSPTemplateError> 
     where
         R: BufRead
     {
