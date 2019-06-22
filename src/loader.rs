@@ -4,12 +4,17 @@ use crate::{
     JSPTemplateError,
 };
 use std::io::BufRead;
+use jsp::{JGraph};
 
-pub struct Loader {}
+pub struct Loader<'a> {
+    graph: &'a mut JGraph,
+}
 
-impl Loader {
-    pub fn new() -> Self {
-        Self {}
+impl<'a> Loader<'a> {
+    pub fn new(graph: &'a mut JGraph) -> Self {
+        Self {
+            graph
+        }
     }
 
     /// Load 

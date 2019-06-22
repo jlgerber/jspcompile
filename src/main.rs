@@ -4,7 +4,7 @@ use std::io::{BufReader};
 use std::path::PathBuf;
 use jsptemplate::*;
 use colored::*;
-
+use jsp::{JGraph, NIndex};
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "jspcompile", about = "Compile a jsptemplate from a jspt file")]
@@ -46,7 +46,11 @@ fn doit() -> Result<(), JSPTemplateError> {
     
     let file = File::open(opt.input)?;
     let bufreader =  BufReader::new(file);
-    let loader = Loader::new();
+
+    // lets create stuff
+    let mut graph = JGraph::new();
+
+    let loader = Loader::new(&mut graph);
     loader.load(bufreader)?;
     Ok(())
 }
