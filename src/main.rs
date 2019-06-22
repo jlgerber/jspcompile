@@ -52,8 +52,10 @@ fn doit() -> Result<(), JSPTemplateError> {
 
     // lets create stuff
     let mut graph = JGraph::new();
+    let mut keymap = JGraphKeyMap::new();
+    let mut regexmap = RegexMap::new();
 
-    let loader = Loader::new(&mut graph);
+    let loader = Loader::new(&mut graph, &mut keymap, &mut regexmap);
     loader.load(bufreader)?;
     Ok(())
 }

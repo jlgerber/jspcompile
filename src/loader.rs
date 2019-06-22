@@ -14,12 +14,14 @@ pub type RegexMap     = HashMap<String, String>;
 
 pub struct Loader<'a> {
     graph: &'a mut JGraph,
+    keymap: &'a mut JGraphKeyMap,
+    regexmap: &'a mut RegexMap,
 }
 
 impl<'a> Loader<'a> {
-    pub fn new(graph: &'a mut JGraph) -> Self {
+    pub fn new(graph: &'a mut JGraph, keymap: &'a mut JGraphKeyMap, regexmap: &'a mut RegexMap) -> Self {
         Self {
-            graph
+            graph, keymap, regexmap
         }
     }
 
