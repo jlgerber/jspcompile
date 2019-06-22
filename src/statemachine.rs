@@ -1,6 +1,7 @@
 use nom::{IResult};
 use crate::{ParseResult, Header, start_parser, regex_parser, node_parser, edge_parser, JSPTemplateError, JSPTemplateLineError};
 use std::cell::Cell;
+use std::fmt;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub enum State {
@@ -10,6 +11,19 @@ pub enum State {
     EdgeParsing,
     Done,
     Error
+}
+
+impl fmt::Display for State {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            State::Start => write!(f, "Start"),
+            State::RegexParsing => write!(f, "RegexParsing"),
+            State::NodeParsing => write!(f, "NodeParsing"),
+            State::EdgeParsing => write!(f, "EdgeParsing"),
+            State::Done => write!(f, "Done"),
+            State::Error => write!(f, "Error"),
+        }
+    }
 }
 
 /// Mange state transitions for parsing the jspt file
