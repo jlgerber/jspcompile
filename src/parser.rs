@@ -1,4 +1,4 @@
-/*
+
 
 use nom::{
     IResult,
@@ -10,9 +10,9 @@ use nom::{
     character::complete::{char, space0, multispace0, alphanumeric1,},
 };
 
-use crate::helpers::*;
+use crate::{helpers::*, components::ParseResult};
 
-*/
+
 
 pub mod header;
 pub use header::{parse_section_header};
@@ -28,3 +28,13 @@ pub use edge::{parse_edges};
 
 pub mod comment;
 pub use comment::parse_comment;
+
+pub fn parse(input: &str) -> IResult<&str, ParseResult> {
+    alt((
+        parse_comment,
+        parse_section_header,
+        parse_regex,
+        parse_node,
+        parse_edges,
+    ))(input)
+}
