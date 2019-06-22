@@ -34,14 +34,16 @@ impl<'a> From<nom::Err<(&'a str, nom::error::ErrorKind)>> for JSPTemplateError {
 } 
 
 
+/// Wrap JSPTemplateError to provide a line number associated with each error
 #[derive(Debug, Fail)]
 pub enum JSPTemplateLineError {
     #[fail(display = "Error at line: {} - {:?}", _0, _1)]
     Error(usize, JSPTemplateError)
 }
 
-
-impl<'a> From<(usize, JSPTemplateError)> for JSPTemplateLineError {
+/// Convert from a JSPTemplateError to a JSPTemplateLineError by 
+/// providing a tuple of ( line number, error ).
+impl From<(usize, JSPTemplateError)> for JSPTemplateLineError {
     fn from(error: (usize, JSPTemplateError) ) -> Self {
         JSPTemplateLineError::Error(error.0, error.1)
     }
