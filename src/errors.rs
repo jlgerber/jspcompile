@@ -1,7 +1,7 @@
 use failure::Fail;
 use crate::State;
 use nom;
-
+use std::{io};
 
 #[derive(Debug, Fail)]
 pub enum JSPTemplateError {
@@ -23,8 +23,14 @@ pub enum JSPTemplateError {
     #[fail(display = "ParsingError: {}",_0)]
     ParsingError(String),
 
-    #[fail(display = "Line Number: {:?}", _0)]
+    #[fail(display = "NomError: {:?}", _0)]
     NomError(String),
+
+    #[fail(display = "ErrorAtLine: {}, Error: {:?}", _0, _1)]
+    ErrorAtLine(usize, Box<JSPTemplateError>),
+
+    #[fail(display = "{}", _0)]
+    IoError(#[cause] io::Error),
 }
 
 impl<'a> From<nom::Err<(&'a str, nom::error::ErrorKind)>> for JSPTemplateError {
@@ -33,18 +39,30 @@ impl<'a> From<nom::Err<(&'a str, nom::error::ErrorKind)>> for JSPTemplateError {
     }
 } 
 
+impl From<io::Error> for JSPTemplateError {
+    fn from(error: io::Error) -> Self {
+        JSPTemplateError::IoError(error)
+    }
+}
+
+impl From<JSPTemplateLineError> for JSPTemplateError {
+    fn from(error: JSPTemplateLineError) -> Self {
+        let JSPTemplateLineError::ErrorAtLine(line, err) = error;
+        JSPTemplateError::ErrorAtLine(line, Box::new(err))
+    }
+}
 
 /// Wrap JSPTemplateError to provide a line number associated with each error
 #[derive(Debug, Fail)]
 pub enum JSPTemplateLineError {
     #[fail(display = "Error at line: {} - {:?}", _0, _1)]
-    Error(usize, JSPTemplateError)
+    ErrorAtLine(usize, JSPTemplateError)
 }
 
 /// Convert from a JSPTemplateError to a JSPTemplateLineError by 
 /// providing a tuple of ( line number, error ).
 impl From<(usize, JSPTemplateError)> for JSPTemplateLineError {
     fn from(error: (usize, JSPTemplateError) ) -> Self {
-        JSPTemplateLineError::Error(error.0, error.1)
+        JSPTemplateLineError::ErrorAtLine(error.0, error.1)
     }
 } 

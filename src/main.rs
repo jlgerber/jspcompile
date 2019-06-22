@@ -20,24 +20,31 @@ struct Opt {
     output: Option<PathBuf>,
 }
 
+fn main() {
+    match doit(){
+        Ok(_) => (),
+        Err(e) => {
+            match e {
+                JSPTemplateError::ErrorAtLine(line, error) => {
+                    println!("");
+                    println!("Error at line: {} - {}",line, error.to_string());
+                    println!("")
+                },
+                
+                _ => println!("{}", e.to_string()),
+            }
+            
+            std::process::exit(1);
+        }
+    }
+}
 
-fn main() -> io::Result<()> {
+fn doit() -> Result<(), JSPTemplateError> {
     let opt = Opt::from_args();
     
     let file = File::open(opt.input)?;
-    let mut statemachine = StateMachine::new();
-    for line in BufReader::new(file).lines() {
-        if let Ok(line) = line {
-            match statemachine.parse(&line) {
-                Ok(v) => println!("line: {} {:?}",statemachine.line(), v),
-                Err(e) => {
-                    println!("{:?}",e);
-                    std::process::exit(1);
-                },
-            }
-        } 
-    }
-
+    let bufreader =  BufReader::new(file);
+    Loader::load(bufreader)?;
     Ok(())
 }
 

@@ -12,6 +12,7 @@ pub enum State {
     Error
 }
 
+/// Mange state transitions for parsing the jspt file
 pub struct StateMachine {
     state: State,
     line: Cell<usize>,
@@ -33,7 +34,9 @@ impl StateMachine {
         }
     }
 
-    pub fn line(&self) -> usize {
+    /// Get the current line number being parsed. The line number is managed
+    /// by the parse method, and is incremented immediately upon invocation.
+    pub fn line_number(&self) -> usize {
         self.line.get()
     }
     /// Parse teh current line of input. If the input is a Header, transition

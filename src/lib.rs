@@ -11,3 +11,6 @@ pub use statemachine::{State, StateMachine};
 
 pub mod errors;
 pub use errors::{JSPTemplateError, JSPTemplateLineError};
+
+pub mod loader;
+pub use loader::Loader;
