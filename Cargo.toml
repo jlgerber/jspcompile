@@ -9,3 +9,8 @@ nom = "5.0.0-beta2"
 failure = "0.1.5"
 structopt = "0.2.16"
 colored = "1.8.0"
+
+[dependencies.jsp]
+git = "https://github.com/jlgerber/jobsyspolice.git"
+tag = "v0.34.0"
+#path = "../jobsyspolice"
