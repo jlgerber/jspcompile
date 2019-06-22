@@ -5,14 +5,15 @@ use std::path::PathBuf;
 use jsptemplate::*;
 use colored::*;
 
+
 #[derive(Debug, StructOpt)]
-#[structopt(name = "jspcompile", about = "compile a jsptemplate from a jsptemplate. hu?")]
+#[structopt(name = "jspcompile", about = "Compile a jsptemplate from a jspt file")]
 struct Opt {
     /// Activate debug mode
     #[structopt(short = "d", long = "debug")]
     debug: bool,
 
-    /// Input file
+    /// Input jspt file
     #[structopt(parse(from_os_str))]
     input: PathBuf,
     
@@ -20,6 +21,7 @@ struct Opt {
     #[structopt(parse(from_os_str))]
     output: Option<PathBuf>,
 }
+
 
 fn main() {
     match doit(){
@@ -37,6 +39,7 @@ fn main() {
         }
     }
 }
+
 
 fn doit() -> Result<(), JSPTemplateError> {
     let opt = Opt::from_args();
