@@ -44,6 +44,7 @@ mod id_char {
         }
     }
 }
+
 #[inline]
 fn is_regex_char(c: char) -> bool {
         // everything except for space
@@ -74,6 +75,25 @@ mod regex_char {
                 !is_ident_char(x)
             );
         }
+    }
+}
+
+#[inline]
+pub fn is_perm_char(c: char) -> bool {
+    ['0', '1', '2', '3', '4', '5', '6', '7'].contains(&c)
+}
+
+pub fn perm_chars(input: &str) -> IResult<&str, &str> {
+  input.split_at_position1_complete(|item| !is_perm_char(char::from(item)), ErrorKind::Alpha)
+}
+
+#[cfg(test)]
+mod perms_test {
+    use super::*;
+    #[test]
+    fn split_perms() {
+        let p = perm_chars("777");
+        assert_eq!(p, Ok(("","777")));
     }
 }
 
