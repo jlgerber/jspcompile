@@ -2,7 +2,7 @@
 
 
 pub mod parser;
-pub use parser::{start_parser, regex_parser, node_parser, edge_parser};
+pub use parser::{start_parser, regex_parser, node_parser, edge_parser, parse_components, parse_metadata};
 
 pub mod helpers;
 //pub(crate) use helpers::*;

@@ -1,6 +1,6 @@
 use nom::{
     IResult,
-    sequence::{preceded, delimited, separated_pair},
+    sequence::{preceded, delimited, separated_pair, terminated},
     bytes::complete::tag,
     branch::alt,
     combinator::map,
@@ -11,21 +11,41 @@ use nom::{
 
 use crate::{Metadata, MetadataComponent, helpers::{variable, perm_chars} };
 
+/// parse Metadata
 pub fn parse_metadata(input: &str) -> IResult<&str, Metadata> {
-
-    Err(nom::Err::Error(("NOT IMPLEMENTED YET", ErrorKind::Tag)))
+    map(
+        parse_components,
+        |item|{
+            let mut metadata = Metadata::new();
+            for component in item {
+                match component {
+                    MetadataComponent::Permissions(perm) => metadata = metadata.set_permissions(Some(perm)),
+                    MetadataComponent::EnvVarName(name) => metadata = metadata.set_varname(Some(name)),
+                    MetadataComponent::Owner(name) => metadata = metadata.set_owner(Some(name)),
+                    MetadataComponent::Volume => metadata = metadata.set_volume(true),
+                    MetadataComponent::Separator => {
+                        log::warn!("parse_metadata encountered Separateor");
+                    }
+                }
+            }
+            metadata
+        }
+    )(input)
 }
 
-fn parse_components(input: &str) -> IResult<&str, Vec<MetadataComponent>> {
-    separated_nonempty_list(
-        parse_comma,
-        alt((
-            parse_volume,
-            parse_permissions,
-            parse_owner,
-            parse_varname,
-        ))
-        
+pub fn parse_components(input: &str) -> IResult<&str, Vec<MetadataComponent>> {
+    delimited( 
+        preceded(space0,tag("[")),
+        separated_nonempty_list(
+            parse_comma,
+            alt((
+                parse_volume,
+                parse_permissions,
+                parse_owner,
+                parse_varname,
+            ))
+        ), 
+        terminated(tag("]"), space0)
     )
     (input)
 }
@@ -36,19 +56,19 @@ mod parse_components_tests {
 
     #[test]
     fn can_parse_volume() {
-       let owner = parse_components(" volume ,");
-       assert_eq!(owner, Ok((",", vec![MetadataComponent::Volume]))) ;
+       let owner = parse_components("[ volume ]");
+       assert_eq!(owner, Ok(("", vec![MetadataComponent::Volume]))) ;
     }
 
     #[test]
     fn can_parse_2_volumes() {
-       let owner = parse_components(" volume ,volume");
+       let owner = parse_components("[ volume ,volume]");
        assert_eq!(owner, Ok(("", vec![MetadataComponent::Volume, MetadataComponent::Volume]))) ;
     }
 
     #[test]
     fn can_parse_volume_and_owner() {
-        let owner = parse_components(" volume , owner : jgerber");
+        let owner = parse_components("[ volume , owner : jgerber] ");
         assert_eq!(
            owner,
             Ok((
@@ -63,7 +83,7 @@ mod parse_components_tests {
 
     #[test]
     fn can_parse_volume_and_owner_and_perms() {
-        let cmp = parse_components(" volume , owner : jgerber, perms: 751");
+        let cmp = parse_components("  [ volume , owner : jgerber, perms: 751 ]");
         assert_eq!(
            cmp,
             Ok((
@@ -80,7 +100,7 @@ mod parse_components_tests {
 
      #[test]
     fn can_parse_volume_and_owner_and_perms_and_varname() {
-        let cmp = parse_components(" volume , owner : jgerber, perms: 751, varname: JG_SHOW");
+        let cmp = parse_components("[ volume , owner : jgerber, perms: 751, varname: JG_SHOW]");
         assert_eq!(
            cmp,
             Ok((

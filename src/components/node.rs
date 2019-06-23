@@ -1,8 +1,9 @@
+use crate::Metadata;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Node {
     /// `rd`
-    Simple(String),
+    Simple(String, Option<Metadata>),
 
     /// `rd = RD`
     Pair{name: String, value: String}, 
@@ -18,7 +19,13 @@ pub enum Node {
 }
 
 impl Node {
-
+    pub fn new_simple<I>(name: I, metadata: Option<Metadata>) -> Node 
+    where  
+        I: Into<String>
+    {
+        Node::Simple(name.into(), metadata)
+    }
+    
     pub fn new_pair<I>(name: I, value: I) -> Node 
     where
         I:Into<String> 

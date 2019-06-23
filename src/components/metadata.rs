@@ -29,6 +29,10 @@ impl Metadata {
         }
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.volume == false && self.permissions.is_none() && self.varname.is_none() && self.owner.is_none()
+    }
+
     /// Set volume and get back moved self. This is designed to be used in 
     /// a fluent api. Otherwise, you must assign back. 
     /// 

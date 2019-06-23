@@ -28,7 +28,7 @@ pub mod empty;
 pub use empty::parse_empty;
 
 pub mod metadata;
-pub use metadata::parse_metadata;
+pub use metadata::{parse_metadata, parse_components};
 
 fn parse_str(input: &str) -> IResult<&str, ParseResult> {
     all_consuming(

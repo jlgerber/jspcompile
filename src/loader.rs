@@ -110,7 +110,7 @@ impl<'a> Loader<'a> {
     fn process_node(&mut self, node: SNode, line: &str, statemachine: &StateMachine) -> Result<(), JSPTemplateError> {
         match node {
             // `rd`
-            SNode::Simple(ref s) => {
+            SNode::Simple(ref s, ref _meta) => {
                 self.keymap.insert(s.clone(), self.graph.add_node(jspnode!(s.clone())));
             }
             // `rd = RD`

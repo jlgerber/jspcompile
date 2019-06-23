@@ -9,7 +9,7 @@ use nom::{
 };
 use crate::helpers::*;
 
-use crate::{Node, ParseResult};
+use crate::{Node, ParseResult, Metadata, parse_components, parse_metadata};
 
 /// Parse node
 pub fn parse_node(input: &str) -> IResult<&str, ParseResult> {
@@ -31,7 +31,7 @@ mod parse_node {
     #[test]
     fn can_parse_revar_simple() {
         let result = parse_node(r#" rd "#);
-        assert_eq!(result, Ok( ("", ParseResult::Node(Node::Simple("rd".to_string())) ) ) );
+        assert_eq!(result, Ok( ("", ParseResult::Node(Node::Simple("rd".to_string(), None)) ) ) );
     }
 
     #[test]
@@ -59,13 +59,34 @@ mod parse_node {
     }
 }
 
+fn parse_node_simple(input: &str) -> IResult<&str, ParseResult> {
+    alt((
+        parse_node_simple_meta,
+        parse_node_simple_nometa,
+    ))(input)
+}
 // parse simple node - that is:
 // rd_node =   rd
-fn parse_node_simple(input: &str) -> IResult<&str,  ParseResult> {
+fn parse_node_simple_nometa(input: &str) -> IResult<&str,  ParseResult> {
     map ( 
-        delimited( space0, variable, multispace0) ,
+        delimited( space0, variable, space0),
         | item| {
-           ParseResult::Node(Node::Simple(item.to_string()))
+           ParseResult::Node(Node::Simple(item.to_string(), None))
+        } 
+    ) 
+    (input)
+}
+
+fn parse_node_simple_meta(input: &str) -> IResult<&str,  ParseResult> {
+    map ( 
+        tuple((
+            preceded( space0, variable),
+            parse_metadata
+        )),
+        | item| {
+            let (var, meta) = item;
+            let meta = if meta.is_empty() {None} else {Some(meta)};
+           ParseResult::Node(Node::Simple(var.to_string(), meta))
         } 
     ) 
     (input)
@@ -79,15 +100,30 @@ mod parse_node_simple {
 
     #[test]
     fn can_parse_revar_simple() {
-        let result = parse_node_simple(r#" rd "#);
-        assert_eq!(result, Ok( ("", ParseResult::Node(Node::Simple("rd".to_string())) ) ) ) ;
+        let result = parse_node_simple(r#" rd"#);
+        assert_eq!(result, Ok( ("", ParseResult::Node(Node::Simple("rd".to_string(), None)) ) ) ) ;
+    }
+
+    #[test]
+    fn can_parse_revar_simple_meta() {
+        let result = parse_node_simple(r#" rd [ volume ] "#);
+        let  md = Metadata::new().set_volume(true);
+        assert_eq!(
+            result, 
+            Ok((
+                "", 
+                ParseResult::Node(
+                    Node::Simple(
+                        "rd".to_string(), 
+                        Some(md)
+                    )) ) ) ) ;
     }
 
     #[test]
     fn can_parse_node_simple_with_return() {
         let result = parse_node_simple(r#" rd
         "#);
-        assert_eq!(result, Ok( ("", ParseResult::Node( Node::Simple("rd".to_string()) ) ) ) );
+        assert_eq!(result, Ok( ("", ParseResult::Node( Node::Simple("rd".to_string(), None) ) ) ) );
     }
 }
 
