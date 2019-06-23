@@ -3,7 +3,7 @@ use colored::Colorize;
 use log::{ LevelFilter, self};
 use fern::{ colors::{Color, ColoredLevelConfig}, self} ;
 use jsp::{JGraph, diskutils};
-use jsptemplate::{JSPTemplateError, Loader, State, RegexMap, JGraphKeyMap};
+use jspcompile::{JSPTemplateError, Loader, State, RegexMap, JGraphKeyMap};
 use std::{fs::File,io::BufReader, path::PathBuf};
 use structopt::StructOpt;
 
