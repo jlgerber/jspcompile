@@ -48,6 +48,9 @@ impl Metadata {
         self
     }
 
+    pub fn is_volume(&self) -> bool {
+        self.volume
+    }
     /// Retrieve whether the metadata has volume set
     pub fn volume(&self) -> bool {
         self.volume
