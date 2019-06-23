@@ -138,15 +138,49 @@ impl Metadata {
         self.permissions.as_ref().map(|x| &**x)
     }
 
-    /// Take the permissions as an Option<String> leaving None in its place
+    /// Take the permissions as an Option<String> leaving None in its place.
+    /// 
+    /// # Parameters
+    /// None
+    /// 
+    /// # Returns
+    /// Permissions as Option<String>
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use jspcompile::Metadata;
+    ///  
+    /// let mut metadata = Metadata::new()
+    ///                 .set_permissions(Some("777"));
+    /// let perms = metadata.take_permissions();
+    /// assert_eq!(perms, Some("777".to_string()));
+    /// ```
     pub fn take_permissions(&mut self) -> Option<String> {
         self.permissions.take()
     }
 
     /// Set varname given an Option wrapped type which implements Into<String>. 
+    /// 
     /// Note that this method consumes and returns `self`. It is designed 
     /// to be optimal for fluent style api application. One must reassign if 
     /// used "stand alone".
+    /// 
+    /// # Parameters
+    /// * `varname` - the variable name to set, as an Option wrapped type 
+    /// that implements Into<String>. 
+    /// 
+    /// # Returns
+    /// `self`
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use jspcompile::Metadata;
+    ///  
+    /// let metadata = Metadata::new()
+    ///                 .set_varname(Some("JG_SHOW"));
+    /// ```
     pub fn set_varname<T>(mut self, varname: Option<T>) -> Self 
     where 
         T: Into<String>
@@ -156,16 +190,45 @@ impl Metadata {
     }
 
     /// Retrieve a reference to `varname` as an Option<&str>
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use jspcompile::Metadata;
+    ///  
+    /// let metadata = Metadata::new()
+    ///                 .set_varname(Some("JG_SHOW"));
+    /// 
+    /// if let Some(varname) = metadata.varname() {
+    ///     assert_eq!(varname, "JG_SHOW");
+    /// }
+    /// ```
     pub fn varname(&self) -> Option<&str> {
         self.varname.as_ref().map(|x| &**x)
     }
     
-    /// Take `varname` as an Option<String>, leaving None in its place
+    /// Take `varname` as an Option<String>, leaving None in its place. 
+    ///
+    /// # Examples
+    /// 
+    /// ```
+    /// use jspcompile::Metadata;
+    ///  
+    /// let mut metadata = Metadata::new()
+    ///                 .set_varname(Some("JG_SHOW"));
+    /// 
+    /// let varname = metadata.take_varname(); 
+    /// assert_eq!(varname, Some("JG_SHOW".to_string()));
+    /// ```
     pub fn take_varname(&mut self) -> Option<String> {
         self.varname.take()
     }
 
     /// Set `owner` given an Option wrapped type which implements `Into<String>`.
+    /// 
+    /// # Parameters
+    /// 
+    /// * `owner` - An 
     pub fn set_owner<T>(mut self, owner: Option<T>) -> Self 
     where
         T: Into<String>
@@ -269,12 +332,27 @@ mod tests {
     }
 
     #[test]
+    fn can_take_owner() {
+        let mut md = Metadata::new().set_volume(true).set_owner(Some("jgerber"));
+        assert_eq!(md.take_owner(), Some("jgerber".to_string()));
+    }
+
+    #[test]
     fn can_get_varname() {
         let md = Metadata::new()
                     .set_volume(true)
                     .set_owner(Some("jgerber"))
                     .set_varname(Some("jg_foo"));
         assert_eq!(md.varname(), Some("jg_foo"));
+    }
+
+    #[test]
+    fn can_take_varname() {
+        let mut md = Metadata::new()
+                    .set_volume(true)
+                    .set_owner(Some("jgerber"))
+                    .set_varname(Some("jg_foo"));
+        assert_eq!(md.take_varname(), Some("jg_foo".to_string()));
     }
 
     #[test]
@@ -285,5 +363,15 @@ mod tests {
                     .set_varname(Some("jg_foo"))
                     .set_permissions(Some("777"));
         assert_eq!(md.permissions(), Some("777"));
+    }
+
+    #[test]
+    fn can_take_permissions() {
+        let mut md = Metadata::new()
+                    .set_volume(true)
+                    .set_owner(Some("jgerber"))
+                    .set_varname(Some("jg_foo"))
+                    .set_permissions(Some("777"));
+        assert_eq!(md.take_permissions(), Some("777".to_string()));
     }
 }
