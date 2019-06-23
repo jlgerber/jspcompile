@@ -256,10 +256,17 @@ mod parse_node_revar {
     }
 }
 
+fn parse_node_regexsimple(input: &str) -> IResult<&str,  ParseResult> {
+    alt((
+        parse_node_regexsimple_meta,
+        parse_node_regexsimple_nometa,
+    ))
+    (input)
+}
 
 // parse regex variable node. regex node references a named regex
 // `rd_node =   $rd`
-fn parse_node_regexsimple(input: &str) -> IResult<&str,  ParseResult> {
+fn parse_node_regexsimple_nometa(input: &str) -> IResult<&str,  ParseResult> {
     map ( 
             tuple((
                 // drops zero or more spaces in front of a variable (upper lower case number _-)
@@ -276,6 +283,7 @@ fn parse_node_regexsimple(input: &str) -> IResult<&str,  ParseResult> {
     ) 
     (input)
 }
+
 fn parse_node_regexsimple_meta(input: &str) -> IResult<&str,  ParseResult> {
     map ( 
             tuple((
@@ -284,11 +292,13 @@ fn parse_node_regexsimple_meta(input: &str) -> IResult<&str,  ParseResult> {
                 // drop zero or more spaces in front of '='
                 preceded(space0, char('=')), 
                 // drop zero or more spaces around variable preceded by $ and drop zero or more spaces and returns
-                delimited( space0, quoted_regex_str, space0) 
+                delimited( space0, quoted_regex_str, space0),
+                parse_metadata
             )),
         | item| {
-            let (var,_,val) = item ;
-             ParseResult::Node(Node::new_regexsimple(var, val, None))
+            let (var,_, val, meta) = item ;
+            let meta = if meta.is_empty() {None} else {Some(meta)};
+            ParseResult::Node(Node::new_regexsimple(var, val, meta))
         } 
     ) 
     (input)
@@ -312,10 +322,16 @@ mod parse_node_regexsimple {
     }
 }
 
-
+fn parse_node_regexcomplex(input: &str) -> IResult<&str,  ParseResult> {
+    alt((
+        parse_node_regexcomplex_meta,
+        parse_node_regexcomplex_nometa
+    ))
+    (input)
+}
 // parse regex variable node. regex node references a named regex
 // `rd_node =   $rd`
-fn parse_node_regexcomplex(input: &str) -> IResult<&str,  ParseResult> {
+fn parse_node_regexcomplex_nometa(input: &str) -> IResult<&str,  ParseResult> {
     map ( 
             tuple((
                 // drops zero or more spaces in front of a variable (upper lower case number _-)
@@ -334,6 +350,26 @@ fn parse_node_regexcomplex(input: &str) -> IResult<&str,  ParseResult> {
     (input)
 }
 
+fn parse_node_regexcomplex_meta(input: &str) -> IResult<&str,  ParseResult> {
+    map ( 
+            tuple((
+                // drops zero or more spaces in front of a variable (upper lower case number _-)
+                preceded(space0, variable),
+                // drop zero or more spaces in front of '='
+                preceded(space0, char('=')), 
+                // drop zero or more spaces around variable preceded by $ and drop zero or more spaces and returns
+                preceded( space0, quoted_regex_str),
+                delimited( space0, quoted_regex_str, space0),
+                parse_metadata
+            )),
+        | item| {
+            let (var,_,pos, neg, meta) = item ;
+            let meta = if meta.is_empty() {None} else {Some(meta)};
+            ParseResult::Node( Node::new_regexcomplex(var, pos, neg, meta))
+        } 
+    ) 
+    (input)
+}
 #[cfg(test)]
 mod parse_node_regexcomplex {
     use super::*;
