@@ -5,6 +5,7 @@ pub enum MetadataComponent {
     Permissions(String),
     EnvVarName(String),
     Owner(String),
+    Separator, // needed for parsing purposes
     //NavAlias(String), 
     //AutoCreate
 }
