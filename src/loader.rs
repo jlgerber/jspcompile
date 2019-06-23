@@ -16,6 +16,7 @@ use std::{
 use jsp::{JGraph, NIndex, User, Node, Regexp, EntryType, NodeType, Metadata as JspMetadata };
 use log;
 
+/// s! calls to_string() on its input
 #[macro_use]
 pub mod macros {
     macro_rules! s {
@@ -43,7 +44,11 @@ impl IsVolume for &Option<Metadata> {
     }
 }
 
+/// A HashMap which associates names with Node `NIndex`s. This is used to
+/// build a JGraph after successfully parsing a jsptemplate.
 pub type JGraphKeyMap = HashMap<String, NIndex>;
+/// A HashMap which associates names with `NodeType`s. This is used to build
+/// a JGraph instance after successfully parsing the jsptemplate.
 pub type RegexMap     = HashMap<String, NodeType>;
 
 /// Loader is responsible for loading the jspt  from something that implements

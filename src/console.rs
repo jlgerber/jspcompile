@@ -1,3 +1,11 @@
+
+//! Currently unused. This struct models an output device for communicating 
+//! with end users via the terminal. Its aim is to provide user readable 
+//! communication that is clearly targeted, unlike logging, which generally
+//! is for developers and tds, and is often dismissed by end users due to 
+//! its noisy appearance.
+//!  
+//! Jspcompile currently handles this via loose functions. 
 use colored::*;
 
 pub struct Console {

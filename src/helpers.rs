@@ -7,7 +7,7 @@ use nom::{
     //character::complete::{char,},
 };
 
-
+// Is the character an uppercase letter, lowercase letter, number, or underscore?
 #[inline]
 fn is_ident_char(c: char) -> bool {
         // uppercase letters
@@ -45,6 +45,8 @@ mod id_char {
     }
 }
 
+// Is the character a valid regular expression character for this crate?
+// we exclude " & ' & space
 #[inline]
 fn is_regex_char(c: char) -> bool {
         // everything except for space
@@ -78,11 +80,21 @@ mod regex_char {
     }
 }
 
+// Is the character a valid permission character (ie a 0,1,2,3,4,5,6, or 7)
+// 0 off
+// 1 - execute
+// 2 - write
+// 3 - execute & write
+// 4 - read
+// 5 - read & execute
+// 6 - read & write
+// 7 - read write execute
 #[inline]
 pub fn is_perm_char(c: char) -> bool {
     ['0', '1', '2', '3', '4', '5', '6', '7'].contains(&c)
 }
 
+/// Parser which parses contiguous perm chars. 
 pub fn perm_chars(input: &str) -> IResult<&str, &str> {
   input.split_at_position1_complete(|item| !is_perm_char(char::from(item)), ErrorKind::Alpha)
 }
@@ -97,7 +109,8 @@ mod perms_test {
     }
 }
 
-#[inline]
+/// Parser which parses contiguous indent chars using the `is_ident_char` function.
+/// ident chars are defined as being uppercase letters, lowercase letters, numbers, or underscores
 pub fn variable(input: &str) -> IResult<&str, &str> {
   input.split_at_position1_complete(|item| !is_ident_char(char::from(item )), ErrorKind::Alpha)
 }
@@ -127,9 +140,9 @@ mod variable {
 
 }
 
-
-#[inline]
-pub fn regex_str(input: &str) -> IResult<&str, &str> {
+// Parser which parses contigous regular expression characters, as defined by the is_regex_char. 
+// Note that we do not accept spaces, single or double quotes
+fn regex_str(input: &str) -> IResult<&str, &str> {
   input.split_at_position1_complete(|item| !is_regex_char(char::from(item)), ErrorKind::Alpha)
 }
 
@@ -151,6 +164,7 @@ mod regex_str {
     }
 }
 
+/// Parser which parses quoted regular expressions, as they appear in the template
 pub fn quoted_regex_str(input: &str) -> IResult<&str, &str> {
     delimited(tag(r#"""#), regex_str, tag(r#"""#))(input)
 }
