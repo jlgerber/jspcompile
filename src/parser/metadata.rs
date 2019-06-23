@@ -23,6 +23,7 @@ fn parse_components(input: &str) -> IResult<&str, Vec<MetadataComponent>> {
             parse_volume,
             parse_permissions,
             parse_owner,
+            parse_varname,
         ))
         
     )
@@ -76,6 +77,25 @@ mod parse_components_tests {
             ))
         );
     }
+
+     #[test]
+    fn can_parse_volume_and_owner_and_perms_and_varname() {
+        let cmp = parse_components(" volume , owner : jgerber, perms: 751, varname: JG_SHOW");
+        assert_eq!(
+           cmp,
+            Ok((
+                "",
+                vec![
+                     MetadataComponent::Volume, 
+                     MetadataComponent::Owner("jgerber".to_string()),
+                    MetadataComponent::Permissions("751".to_string()),
+                    MetadataComponent::EnvVarName("JG_SHOW".to_string())
+
+                ]
+            ))
+        );
+    }
+
 }
 
 fn parse_comma(input:  &str) -> IResult<&str, MetadataComponent> {
@@ -194,5 +214,48 @@ mod permissions_tests {
         assert_eq!(p, Ok(("", MetadataComponent::Permissions("777".to_string()))));
         let p = parse_permissions(" perms :777 ");
         assert_eq!(p, Ok(("", MetadataComponent::Permissions("777".to_string()))));
+    }
+}
+
+
+// varname : jgerber
+fn parse_varname(input: &str) -> IResult<&str, MetadataComponent> {
+    map(
+        delimited(
+            space0,
+            separated_pair(
+                tag("varname"),
+                 preceded(space0,tag(":")), 
+                 preceded(space0, variable)
+            ), 
+            space0,
+        ),
+        |item| {
+            let (_, var_name) = item;
+            MetadataComponent::EnvVarName(var_name.to_string())
+        }
+    )(input)
+}
+
+
+#[cfg(test)]
+mod varname_tests {
+    use super::*;
+
+    #[test]
+    fn can_parse_varname_no_spaces() {
+       let varname = parse_varname("varname:fred");
+       assert_eq!(varname, Ok(("", MetadataComponent::EnvVarName("fred".to_string())))) ;
+    }
+
+    #[test]
+    fn can_parse_varname_spaces() {
+       let varname = parse_varname("varname : fred");
+       assert_eq!(varname, Ok(("", MetadataComponent::EnvVarName("fred".to_string())))) ;
+    }
+    #[test]
+    fn can_parse_varname_more_spaces() {
+       let varname = parse_varname("  varname : fred  ");
+       assert_eq!(varname, Ok(("", MetadataComponent::EnvVarName("fred".to_string())))) ;
     }
 }
