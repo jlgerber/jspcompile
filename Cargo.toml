@@ -1,5 +1,5 @@
 [package]
-name = "jsptemplate"
+name = "jspcompile"
 version = "0.3.0"
 authors = ["jgerber"]
 edition = "2018"

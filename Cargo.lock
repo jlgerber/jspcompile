@@ -272,7 +272,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "jsptemplate"
+name = "jspcompile"
 version = "0.3.0"
 dependencies = [
  "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
