@@ -49,13 +49,13 @@ mod parse_node {
     #[test]
     fn can_parse_node_regexsimple() {
         let result = parse_node(r#"rd = "(foo|bar)" "#);
-        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_regexsimple("rd", "(foo|bar)"))) ) ) ;
+        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_regexsimple("rd", "(foo|bar)", None))) ) ) ;
     }
 
     #[test]
     fn can_parse_node_regexcomplex() {
         let result = parse_node_regexcomplex(r#"rd = "(foo|bar)" "(bla|mange)" "#);
-        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_regexcomplex("rd", "(foo|bar)", "(bla|mange)" )) ) )) ;
+        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_regexcomplex("rd", "(foo|bar)", "(bla|mange)", None )) ) )) ;
     }
 }
 
@@ -189,10 +189,17 @@ mod parse_node_pair {
 
 }
 
+fn parse_node_revar(input: &str) -> IResult<&str,  ParseResult> {
+    alt((
+        parse_node_revar_meta,
+        parse_node_revar_nometa,
+    ))
+    (input)
+}
 
 // parse regex variable node. regex node references a named regex
 // `rd_node =   $rd`
-fn parse_node_revar(input: &str) -> IResult<&str,  ParseResult> {
+fn parse_node_revar_nometa(input: &str) -> IResult<&str,  ParseResult> {
     map ( 
             tuple((
                 // drops zero or more spaces in front of a variable (upper lower case number _-)
@@ -210,6 +217,25 @@ fn parse_node_revar(input: &str) -> IResult<&str,  ParseResult> {
     (input)
 }
 
+fn parse_node_revar_meta(input: &str) -> IResult<&str,  ParseResult> {
+    map ( 
+            tuple((
+                // drops zero or more spaces in front of a variable (upper lower case number _-)
+                preceded(space0, variable),
+                // drop zero or more spaces in front of '='
+                preceded(space0, char('=')), 
+                // drop zero or more spaces around variable preceded by $ and drop zero or more spaces and returns
+                delimited( space0, preceded(tag("$"),variable), space0),
+                parse_metadata,
+            )),
+        | item| {
+            let (var,_,val, meta) = item ;
+            let meta = if meta.is_empty() {None} else {Some(meta)};
+            ParseResult::Node( Node::new_revar(var, val, meta))
+        } 
+    ) 
+    (input)
+}
 
 #[cfg(test)]
 mod parse_node_revar {
@@ -245,12 +271,28 @@ fn parse_node_regexsimple(input: &str) -> IResult<&str,  ParseResult> {
             )),
         | item| {
             let (var,_,val) = item ;
-             ParseResult::Node(Node::new_regexsimple(var, val))
+             ParseResult::Node(Node::new_regexsimple(var, val, None))
         } 
     ) 
     (input)
 }
-
+fn parse_node_regexsimple_meta(input: &str) -> IResult<&str,  ParseResult> {
+    map ( 
+            tuple((
+                // drops zero or more spaces in front of a variable (upper lower case number _-)
+                preceded(space0, variable),
+                // drop zero or more spaces in front of '='
+                preceded(space0, char('=')), 
+                // drop zero or more spaces around variable preceded by $ and drop zero or more spaces and returns
+                delimited( space0, quoted_regex_str, space0) 
+            )),
+        | item| {
+            let (var,_,val) = item ;
+             ParseResult::Node(Node::new_regexsimple(var, val, None))
+        } 
+    ) 
+    (input)
+}
 #[cfg(test)]
 mod parse_node_regexsimple {
     use super::*;
@@ -259,14 +301,14 @@ mod parse_node_regexsimple {
     #[test]
     fn can_parse_node_regexsimple() {
         let result = parse_node_regexsimple(r#"rd = "(foo|bar)" "#);
-        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_regexsimple("rd", "(foo|bar)")) ) )) ;
+        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_regexsimple("rd", "(foo|bar)", None)) ) )) ;
     }
 
     #[test]
     fn can_parse_node_regexsimplewith_return() {
         let result = parse_node_regexsimple(r#" rd = "[a-zA-Z0-1_-]"
         "#);
-        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_regexsimple("rd", "[a-zA-Z0-1_-]") ) )) );
+        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_regexsimple("rd", "[a-zA-Z0-1_-]", None) ) )) );
     }
 }
 
@@ -286,7 +328,7 @@ fn parse_node_regexcomplex(input: &str) -> IResult<&str,  ParseResult> {
             )),
         | item| {
             let (var,_,pos, neg) = item ;
-            ParseResult::Node( Node::new_regexcomplex(var, pos, neg))
+            ParseResult::Node( Node::new_regexcomplex(var, pos, neg, None))
         } 
     ) 
     (input)
@@ -300,14 +342,14 @@ mod parse_node_regexcomplex {
     #[test]
     fn can_parse_node_regexcomplex() {
         let result = parse_node_regexcomplex(r#"rd = "(foo|bar)" "(bla|mange)" "#);
-        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_regexcomplex("rd", "(foo|bar)", "(bla|mange)" )) ) )) ;
+        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_regexcomplex("rd", "(foo|bar)", "(bla|mange)", None )) ) )) ;
     }
 
     #[test]
     fn can_parse_node_regexsimplewith_return() {
         let result = parse_node_regexcomplex(r#" rd = "[a-zA-Z0-1_-]" "(bla|mange)"
         "#);
-        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_regexcomplex("rd", "[a-zA-Z0-1_-]","(bla|mange)") )) ) );
+        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_regexcomplex("rd", "[a-zA-Z0-1_-]","(bla|mange)", None) )) ) );
     }
 }
 

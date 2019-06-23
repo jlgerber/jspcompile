@@ -142,7 +142,7 @@ impl<'a> Loader<'a> {
                 );
             } 
             // `rd = "[a-z]+"`
-            SNode::RegexSimple{ref name, ref re} => {
+            SNode::RegexSimple{ref name, ref re, ref metadata} => {
                 let regx = Regexp::new(format!("^{}$", re.as_str()).as_str())?;
                 self.keymap.insert(
                     name.clone(), 
@@ -150,13 +150,14 @@ impl<'a> Loader<'a> {
                         Node::new_simple(
                             NodeType::new_regex( name.clone(), regx, None),
                             EntryType::Directory,
-                            JspMetadata::new()
+                            //JspMetadata::new()
+                            new_jsp_metadata(metadata)
                         )
                     )
                 );
             }
             // `rd = "[a-z]+" "(foo|bar)"`
-            SNode::RegexComplex{ref name, ref pos, ref neg} => {
+            SNode::RegexComplex{ref name, ref pos, ref neg, ref metadata} => {
                 let regx_pos = Regexp::new(format!("^{}$", pos.as_str()).as_str())?;
                 let regx_neg = Regexp::new(format!("^{}$", neg.as_str()).as_str())?;
                 self.keymap.insert(
@@ -165,7 +166,8 @@ impl<'a> Loader<'a> {
                         Node::new_simple(
                             NodeType::new_regex( name.clone(), regx_pos, Some(regx_neg)),
                             EntryType::Directory,
-                            JspMetadata::new()
+                            //JspMetadata::new()
+                            new_jsp_metadata(metadata)
                         )
                     )
                 );

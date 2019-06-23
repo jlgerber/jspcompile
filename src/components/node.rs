@@ -12,10 +12,10 @@ pub enum Node {
     ReVar{name: String, variable: String, metadata: Option<Metadata>}, 
 
     /// `rd = "[a-z]+"`
-    RegexSimple{name: String, re: String },
+    RegexSimple{name: String, re: String, metadata: Option<Metadata> },
 
     /// `rd = "[a-z]+" "(foo|bar)"`
-    RegexComplex{name:String, pos: String, neg: String}, 
+    RegexComplex{name:String, pos: String, neg: String, metadata: Option<Metadata>}, 
 }
 
 impl Node {
@@ -48,17 +48,18 @@ impl Node {
         }
     }
 
-    pub fn new_regexsimple<I>(name: I, re: I) -> Node 
+    pub fn new_regexsimple<I>(name: I, re: I, metadata: Option<Metadata>) -> Node 
     where 
         I:Into<String> 
     {
         Node::RegexSimple {
             name: name.into(),
-            re: re.into()
+            re: re.into(),
+            metadata
         }
     }
 
-    pub fn new_regexcomplex<I>(name: I, pos: I, neg: I) -> Node 
+    pub fn new_regexcomplex<I>(name: I, pos: I, neg: I, metadata: Option<Metadata>) -> Node 
     where 
         I:Into<String> 
     {
@@ -66,6 +67,7 @@ impl Node {
             name: name.into(),
             pos: pos.into(),
             neg: neg.into(),
+            metadata
         }
     }
 
