@@ -5,7 +5,12 @@ pub enum MetadataComponent {
     Permissions(String),
     EnvVarName(String),
     Owner(String),
-    Separator, // needed for parsing purposes
+    // Nom requires that all branches of certain 
+    // matches have the same type, so I added 
+    // Separator, even though it isn't really a 
+    // type that survives parsing. I may create a separate enum
+    // to get around this in the future, as I don't like this leaking.
+    Separator, 
     //NavAlias(String), 
     //AutoCreate
 }
@@ -39,25 +44,75 @@ impl Metadata {
     /// # Examples
     /// 
     /// ```
-    /// let metdata = Metadata.new()
+    /// use jspcompile::Metadata;
+    /// 
+    /// let metadata = Metadata::new()
     ///                 .set_volume(true)
-    ///                 .set_owner(Some("jgerber".to_string()));
+    ///                 .set_owner(Some("jgerber"));
     /// ```
     pub fn set_volume(mut self, is: bool) -> Self {
         self.volume = is;
         self
     }
 
+    /// Test to see if the Metadata represents a Volume. 
+    /// 
+    /// # Parameters
+    /// None
+    /// 
+    /// # Returns
+    /// bool 
+    /// 
+    /// # Examples 
+    /// 
+    /// ```
+    /// use jspcompile::Metadata;
+    /// 
+    /// let metadata = Metadata::new()
+    ///                 .set_volume(true)
+    ///                 .set_owner(Some("jgerber"));
+    /// 
+    /// assert_eq!(metadata.is_volume(), true);
+    /// ```
     pub fn is_volume(&self) -> bool {
-        self.volume
-    }
-    /// Retrieve whether the metadata has volume set
-    pub fn volume(&self) -> bool {
         self.volume
     }
 
     /// Set permissions, passing in an Option of a type which we 
-    /// can get a string from (via into)
+    /// can get a string from (via into). This method consumes and
+    /// returns `self`, so it is convenient when using in a chained,
+    /// fluent api, but requires reassignment if using "stand alone".
+    /// 
+    /// # Parameters
+    /// 
+    /// * `perms` - permissions of type Into<String>. 
+    /// 
+    /// # Examples
+    /// 
+    /// ## Fluent Style 
+    /// ```
+    /// use jspcompile::Metadata;
+    /// 
+    /// let metadata = Metadata::new()
+    ///                 .set_permissions(Some("777"))
+    ///                 .set_volume(true)
+    ///                 .set_owner(Some("jgerber"));
+    /// ```
+    /// 
+    /// ## Stand Alone
+    /// ```
+    /// use jspcompile::Metadata;
+    /// 
+    /// let metadata = Metadata::new();
+    /// let metadata = metadata.set_permissions(Some("777"));
+    /// ```
+    /// Alternatively, we can make metadata mutable.
+    /// ```
+    /// use jspcompile::Metadata;
+    /// 
+    /// let mut metadata = Metadata::new();
+    /// metadata = metadata.set_permissions(Some("777"));
+    /// ```
     pub fn set_permissions<T>(mut self, perms: Option<T>) -> Self 
     where 
         T: Into<String> 
@@ -66,10 +121,32 @@ impl Metadata {
         self
     }
 
+    /// Retrieve permissions as an Option wrapped &str. 
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use jspcompile::Metadata;
+    ///  
+    /// let metadata = Metadata::new()
+    ///                 .set_permissions(Some("777"));
+    /// if let Some(perms) = metadata.permissions() {
+    ///     assert_eq!(perms, "777");
+    /// }
+    /// ```
     pub fn permissions(&self) -> Option<&str> {
         self.permissions.as_ref().map(|x| &**x)
     }
 
+    /// Take the permissions as an Option<String> leaving None in its place
+    pub fn take_permissions(&mut self) -> Option<String> {
+        self.permissions.take()
+    }
+
+    /// Set varname given an Option wrapped type which implements Into<String>. 
+    /// Note that this method consumes and returns `self`. It is designed 
+    /// to be optimal for fluent style api application. One must reassign if 
+    /// used "stand alone".
     pub fn set_varname<T>(mut self, varname: Option<T>) -> Self 
     where 
         T: Into<String>
@@ -78,10 +155,17 @@ impl Metadata {
         self
     }
 
+    /// Retrieve a reference to `varname` as an Option<&str>
     pub fn varname(&self) -> Option<&str> {
         self.varname.as_ref().map(|x| &**x)
     }
     
+    /// Take `varname` as an Option<String>, leaving None in its place
+    pub fn take_varname(&mut self) -> Option<String> {
+        self.varname.take()
+    }
+
+    /// Set `owner` given an Option wrapped type which implements `Into<String>`.
     pub fn set_owner<T>(mut self, owner: Option<T>) -> Self 
     where
         T: Into<String>
@@ -90,8 +174,15 @@ impl Metadata {
         self
     }
 
+    /// Retrieve a reference to `owner` as an Option wrapped `&str`.
     pub fn owner(&self) -> Option<&str> {
         self.owner.as_ref().map(|x| &**x)
+    }
+
+    /// Retrieve the `owner` as an Option wrapped String, leaving 
+    /// None in its place. 
+    pub fn take_owner(&mut self) -> Option<String> {
+        self.owner.take()
     }
 
 }
@@ -168,7 +259,7 @@ mod tests {
     #[test]
     fn can_get_volume() {
         let md = Metadata::new().set_volume(true);
-        assert_eq!(md.volume(), true);
+        assert_eq!(md.is_volume(), true);
     }
 
     #[test]
