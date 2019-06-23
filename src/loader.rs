@@ -140,7 +140,7 @@ impl<'a> Loader<'a> {
             } 
             // `rd = "[a-z]+"`
             SNode::RegexSimple{ref name, ref re} => {
-                let regx = Regexp::new(re.as_str())?;
+                let regx = Regexp::new(format!("^{}$", re.as_str()).as_str())?;
                 self.keymap.insert(
                     name.clone(), 
                     self.graph.add_node( 
@@ -154,8 +154,8 @@ impl<'a> Loader<'a> {
             }
             // `rd = "[a-z]+" "(foo|bar)"`
             SNode::RegexComplex{ref name, ref pos, ref neg} => {
-                let regx_pos = Regexp::new(pos.as_str())?;
-                let regx_neg = Regexp::new(neg.as_str())?;
+                let regx_pos = Regexp::new(format!("^{}$", pos.as_str()).as_str())?;
+                let regx_neg = Regexp::new(format!("^{}$", neg.as_str()).as_str())?;
                 self.keymap.insert(
                     name.clone(), 
                     self.graph.add_node( 
@@ -176,13 +176,15 @@ impl<'a> Loader<'a> {
     // these will be used in node later.
     fn process_regex(&mut self, regex: Regex)-> Result<(), JSPTemplateError> {
         match regex {
+
             Regex::Simple{ ref name,  ref value} => {
-                let re = Regexp::new(value.as_str())?;
+                let re = Regexp::new(format!("^{}$", value.as_str()).as_str())?;
                 self.regexmap.insert(name.clone(), NodeType::new_regex( name.clone(), re, None));
             }
+
             Regex::Complex{ ref name, ref positive, ref negative} => {
-                let pos_re = Regexp::new(positive.as_str())?;
-                let neg_re = Regexp::new(negative.as_str())?;
+                let pos_re = Regexp::new(format!("^{}$", positive.as_str()).as_str())?;
+                let neg_re = Regexp::new(format!("^{}$", negative.as_str()).as_str())?;
                 self.regexmap.insert(name.clone(), NodeType::new_regex(name.clone(), pos_re, Some(neg_re)));
             }
         }
