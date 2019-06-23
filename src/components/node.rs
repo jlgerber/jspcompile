@@ -9,7 +9,7 @@ pub enum Node {
     Pair{name: String, value: String, metadata: Option<Metadata>}, 
 
     /// `rd = $rd_re`
-    ReVar{name: String, variable: String}, 
+    ReVar{name: String, variable: String, metadata: Option<Metadata>}, 
 
     /// `rd = "[a-z]+"`
     RegexSimple{name: String, re: String },
@@ -37,13 +37,14 @@ impl Node {
         }
     }
 
-    pub fn new_revar<I>(name: I, variable: I) -> Node 
+    pub fn new_revar<I>(name: I, variable: I, metadata: Option<Metadata>) -> Node 
     where 
         I:Into<String> 
     {
         Node::ReVar {
             name: name.into(),
-            variable: variable.into()
+            variable: variable.into(),
+            metadata
         }
     }
 
