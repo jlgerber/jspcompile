@@ -27,6 +27,9 @@ pub use comment::parse_comment;
 pub mod empty;
 pub use empty::parse_empty;
 
+pub mod metadata;
+pub use metadata::parse_metadata;
+
 fn parse_str(input: &str) -> IResult<&str, ParseResult> {
     all_consuming(
         alt((
