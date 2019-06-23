@@ -43,7 +43,7 @@ mod parse_node {
     #[test]
     fn can_parse_node_revar() {
         let result = parse_node(r#"rd = $rdexpr "#);
-        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_revar("rd", "rdexpr")) )) ) ;
+        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_revar("rd", "rdexpr",None)) )) ) ;
     }
 
     #[test]
@@ -204,7 +204,7 @@ fn parse_node_revar(input: &str) -> IResult<&str,  ParseResult> {
             )),
         | item| {
             let (var,_,val) = item ;
-            ParseResult::Node( Node::new_revar(var, val))
+            ParseResult::Node( Node::new_revar(var, val, None))
         } 
     ) 
     (input)
@@ -219,14 +219,14 @@ mod parse_node_revar {
     #[test]
     fn can_parse_node_revar() {
         let result = parse_node_revar(r#"rd = $rdexpr "#);
-        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_revar("rd", "rdexpr")) ) )) ;
+        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_revar("rd", "rdexpr", None)) ) )) ;
     }
 
     #[test]
     fn can_parse_node_pair_with_return() {
         let result = parse_node_revar(r#" rd = $rdexpr
         "#);
-        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_revar("rd", "rdexpr") )) ) );
+        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_revar("rd", "rdexpr", None) )) ) );
     }
 }
 
