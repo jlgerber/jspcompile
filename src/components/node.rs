@@ -6,7 +6,7 @@ pub enum Node {
     Simple(String, Option<Metadata>),
 
     /// `rd = RD`
-    Pair{name: String, value: String}, 
+    Pair{name: String, value: String, metadata: Option<Metadata>}, 
 
     /// `rd = $rd_re`
     ReVar{name: String, variable: String}, 
@@ -25,14 +25,15 @@ impl Node {
     {
         Node::Simple(name.into(), metadata)
     }
-    
-    pub fn new_pair<I>(name: I, value: I) -> Node 
+
+    pub fn new_pair<I>(name: I, value: I, metadata: Option<Metadata>) -> Node 
     where
         I:Into<String> 
     {
         Node::Pair{
             name: name.into(),
-            value: value.into()
+            value: value.into(),
+            metadata,
         }
     }
 

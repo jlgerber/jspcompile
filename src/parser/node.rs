@@ -9,7 +9,7 @@ use nom::{
 };
 use crate::helpers::*;
 
-use crate::{Node, ParseResult, Metadata, parse_components, parse_metadata};
+use crate::{Node, ParseResult, Metadata, parse_metadata};
 
 /// Parse node
 pub fn parse_node(input: &str) -> IResult<&str, ParseResult> {
@@ -37,7 +37,7 @@ mod parse_node {
     #[test]
     fn can_parse_node_pair() {
         let result = parse_node(r#"rd = RD "#);
-        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_pair("rd", "RD")) ) )) ;
+        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_pair("rd", "RD", None)) ) )) ;
     }
 
     #[test]
@@ -130,6 +130,13 @@ mod parse_node_simple {
 // parse simple node - that is:
 // rd_node =   rd
 fn parse_node_pair(input: &str) -> IResult<&str,  ParseResult> {
+    alt((
+        parse_node_pair_meta,
+        parse_node_pair_nometa,
+    ))(input)
+}
+
+fn parse_node_pair_nometa(input: &str) -> IResult<&str,  ParseResult> {
     map ( 
             tuple((
                 preceded(space0, variable),
@@ -138,7 +145,24 @@ fn parse_node_pair(input: &str) -> IResult<&str,  ParseResult> {
             )),
         | item| {
             let (var,_,val) = item ;
-             ParseResult::Node(Node::new_pair(var, val))
+             ParseResult::Node(Node::new_pair(var, val, None))
+        } 
+    ) 
+    (input)
+}
+
+fn parse_node_pair_meta(input: &str) -> IResult<&str,  ParseResult> {
+    map ( 
+            tuple((
+                preceded(space0, variable),
+                preceded(space0, char('=')), 
+                preceded( space0, variable) ,
+                parse_metadata,
+            )),
+        | item| {
+            let (var,_,val, meta) = item ;
+            let meta = if meta.is_empty() {None} else {Some(meta)};
+             ParseResult::Node(Node::new_pair(var, val, meta))
         } 
     ) 
     (input)
@@ -153,15 +177,16 @@ mod parse_node_pair {
     #[test]
     fn can_parse_node_pair() {
         let result = parse_node_pair(r#"rd = RD "#);
-        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_pair("rd", "RD")) )) ) ;
+        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_pair("rd", "RD", None)) )) ) ;
     }
 
     #[test]
-    fn can_parse_node_pair_with_return() {
-        let result = parse_node_pair(r#" rd = RD
-        "#);
-        assert_eq!(result, Ok( ("",ParseResult::Node( Node::new_pair("rd", "RD") ) )) );
+    fn can_parse_node_pair_meta() {
+        let md = Metadata::new().set_volume(true).set_owner(Some("jgerber"));
+        let result = parse_node_pair(r#"rd = RD [volume, owner:jgerber ]"#);
+        assert_eq!(result, Ok( ("", ParseResult::Node(Node::new_pair("rd", "RD", Some(md))) )) ) ;
     }
+
 }
 
 

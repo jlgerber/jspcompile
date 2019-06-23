@@ -111,10 +111,11 @@ impl<'a> Loader<'a> {
         match node {
             // `rd`
             SNode::Simple(ref s, ref _meta) => {
+                //TODO:: convert to non macro to handle metadata
                 self.keymap.insert(s.clone(), self.graph.add_node(jspnode!(s.clone())));
             }
             // `rd = RD`
-            SNode::Pair{ref name, ref value} => {
+            SNode::Pair{ref name, ref value, ref metadata} => {
                 self.keymap.insert(name.clone(), self.graph.add_node(jspnode!(value.clone())));
             }
             // `rd = $rd_re`
