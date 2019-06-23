@@ -99,13 +99,13 @@ mod parse_node_simple {
     //use nom::error::ErrorKind;
 
     #[test]
-    fn can_parse_revar_simple() {
+    fn can_parse_node_simple() {
         let result = parse_node_simple(r#" rd"#);
         assert_eq!(result, Ok( ("", ParseResult::Node(Node::Simple("rd".to_string(), None)) ) ) ) ;
     }
 
     #[test]
-    fn can_parse_revar_simple_meta() {
+    fn can_parse_node_simple_meta() {
         let result = parse_node_simple(r#" rd [ volume ] "#);
         let  md = Metadata::new().set_volume(true);
         assert_eq!(
@@ -119,12 +119,6 @@ mod parse_node_simple {
                     )) ) ) ) ;
     }
 
-    #[test]
-    fn can_parse_node_simple_with_return() {
-        let result = parse_node_simple(r#" rd
-        "#);
-        assert_eq!(result, Ok( ("", ParseResult::Node( Node::Simple("rd".to_string(), None) ) ) ) );
-    }
 }
 
 // parse simple node - that is:
