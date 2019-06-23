@@ -13,7 +13,7 @@ use std::{
     io::BufRead,
     collections::HashMap,
 };
-use jsp::{JGraph, NIndex, User, Node, Regexp, jspnode, EntryType, NodeType, Metadata as JspMetadata };
+use jsp::{JGraph, NIndex, User, Node, Regexp, EntryType, NodeType, Metadata as JspMetadata };
 use log;
 
 #[macro_use]
@@ -71,6 +71,12 @@ impl<'a> Loader<'a> {
                             }
                             ParseResult::Edges(edges) => {
                                 log::info!("line: {} {:?}", statemachine.line_number(), edges);
+                                
+                                // deal with root
+                                if edges.len() > 0 && edges[0].from != "root" {
+                                    let root = Edge::new(s!("root"), edges[0].from.clone());
+                                    self.process_edges(vec![root],line.as_str(), &statemachine)?;
+                                }
                                 self.process_edges(edges, line.as_str(), &statemachine)?;
                             }
                         }
