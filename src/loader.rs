@@ -7,7 +7,7 @@ use crate::{
     Regex,
     Node as SNode,
     Edge,
-
+    Metadata
 };
 use std::{
     io::BufRead,
@@ -110,13 +110,39 @@ impl<'a> Loader<'a> {
     fn process_node(&mut self, node: SNode, line: &str, statemachine: &StateMachine) -> Result<(), JSPTemplateError> {
         match node {
             // `rd`
-            SNode::Simple(ref s, ref _meta) => {
+            SNode::Simple(ref name, ref metadata) => {
                 //TODO:: convert to non macro to handle metadata
-                self.keymap.insert(s.clone(), self.graph.add_node(jspnode!(s.clone())));
+                //self.keymap.insert(name.clone(), self.graph.add_node(jspnode!(name.clone())));
+                let entrytype = if is_volume(metadata) {EntryType::Volume} else {EntryType::Directory};
+                self.keymap.insert(
+                    name.clone(), 
+                    self.graph.add_node( 
+                        Node::new_simple(
+                            NodeType::Simple(name.clone()),
+                            entrytype,
+                            //EntryType::Directory,
+                            //JspMetadata::new()
+                            new_jsp_metadata(metadata)
+                        )
+                    )
+                );
             }
             // `rd = RD`
             SNode::Pair{ref name, ref value, ref metadata} => {
-                self.keymap.insert(name.clone(), self.graph.add_node(jspnode!(value.clone())));
+                //self.keymap.insert(name.clone(), self.graph.add_node(jspnode!(value.clone())));
+                let entrytype = if is_volume(metadata) {EntryType::Volume} else {EntryType::Directory};
+                self.keymap.insert(
+                    name.clone(), 
+                    self.graph.add_node( 
+                        Node::new_simple(
+                            NodeType::Simple(value.clone()),
+                            //EntryType::Directory,
+                            entrytype,
+                            //JspMetadata::new()
+                            new_jsp_metadata(metadata)
+                        )
+                    )
+                );
             }
             // `rd = $rd_re`
             SNode::ReVar{ref name, ref variable, ref metadata} => {
@@ -128,13 +154,14 @@ impl<'a> Loader<'a> {
                         JSPTemplateError::RegexMapLookupError(variable.clone()
                     ))
                 ))?;
-                
+                let entrytype = if is_volume(metadata) {EntryType::Volume} else {EntryType::Directory};
                 self.keymap.insert(
                     name.clone(), 
                     self.graph.add_node( 
                         Node::new_simple(
                             var.clone(),
-                            EntryType::Directory,
+                            //EntryType::Directory,
+                            entrytype,
                             //JspMetadata::new()
                             new_jsp_metadata(metadata)
                         )
@@ -144,12 +171,14 @@ impl<'a> Loader<'a> {
             // `rd = "[a-z]+"`
             SNode::RegexSimple{ref name, ref re, ref metadata} => {
                 let regx = Regexp::new(format!("^{}$", re.as_str()).as_str())?;
+                let entrytype = if is_volume(metadata) {EntryType::Volume} else {EntryType::Directory};
                 self.keymap.insert(
                     name.clone(), 
                     self.graph.add_node( 
                         Node::new_simple(
                             NodeType::new_regex( name.clone(), regx, None),
-                            EntryType::Directory,
+                            //EntryType::Directory,
+                            entrytype,
                             //JspMetadata::new()
                             new_jsp_metadata(metadata)
                         )
@@ -160,12 +189,14 @@ impl<'a> Loader<'a> {
             SNode::RegexComplex{ref name, ref pos, ref neg, ref metadata} => {
                 let regx_pos = Regexp::new(format!("^{}$", pos.as_str()).as_str())?;
                 let regx_neg = Regexp::new(format!("^{}$", neg.as_str()).as_str())?;
+                let entrytype = if is_volume(metadata) {EntryType::Volume} else {EntryType::Directory};
                 self.keymap.insert(
                     name.clone(), 
                     self.graph.add_node( 
                         Node::new_simple(
                             NodeType::new_regex( name.clone(), regx_pos, Some(regx_neg)),
-                            EntryType::Directory,
+                            //EntryType::Directory,
+                            entrytype,
                             //JspMetadata::new()
                             new_jsp_metadata(metadata)
                         )
@@ -227,4 +258,13 @@ fn new_jsp_metadata( meta: &Option<crate::Metadata> ) -> JspMetadata {
         }
     }
     jspmeta
+}
+
+// 
+fn is_volume(meta: &Option<Metadata>) -> bool {
+    if let Some(meta) = meta {
+        meta.is_volume()
+    } else {
+        false
+    }
 }
