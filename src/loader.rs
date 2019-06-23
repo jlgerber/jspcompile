@@ -248,7 +248,7 @@ fn new_jsp_metadata( meta: &Option<crate::Metadata> ) -> JspMetadata {
             let owner = meta.owner().unwrap();
             jspmeta.set_owner(
                 Some(
-                    User::Named(owner.to_string()) 
+                    User::from(owner.to_string()) 
                 )
             );
         }
