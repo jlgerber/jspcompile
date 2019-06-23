@@ -25,9 +25,45 @@ pub mod macros {
     }
 }
 
+// Is there any reason to make this a public trait?
+// A bit of sugar to allow us to call is_volume
+// as a method on Option<metadata> instead of having to define
+// this as a loose function. 
+trait IsVolume {
+    fn is_volume(&self) -> bool;
+}
+
+impl IsVolume for &Option<Metadata> {
+    fn is_volume(&self) ->bool {
+        if let Some(meta) = self {
+        meta.is_volume()
+        } else {
+            false
+        }
+    }
+}
+
 pub type JGraphKeyMap = HashMap<String, NIndex>;
 pub type RegexMap     = HashMap<String, NodeType>;
 
+/// Loader is responsible for loading the jspt  from something that implements
+/// the BufRead interace (like a buffered file or a Cursor) and producing
+/// a populated JGraph. 
+/// As a note, the reason why we hold mutable references to graph, keymap and regexmap
+/// is so we (A) dont have to pass them into all of the methods, and (B) so that 
+/// the graph may outlive the loader.
+/// 
+/// There are a couple of alternatives worth exploring from a design perspective:
+/// 
+/// (1) hold owned instances, and swap the JGraph with a blank one at the end of the load
+/// method, which would return a JGraph. We would also like to clear the KeyMap and RegexMap
+/// in that case, as they would be "dirty". Alternatively, we could have a dirty flag
+/// for each and check that at the beginning of load, only clearing them in the event that
+/// the dirty flag is true. I don't forsee actually using the loader multiple times,
+/// at least not in the cli, but other uses are possible (like a gui) so...
+/// 
+/// (2) make the values all Option<T>, and use take to unwrap their inner value. 
+/// 
 pub struct Loader<'a> {
     graph: &'a mut JGraph,
     keymap: &'a mut JGraphKeyMap,
@@ -35,6 +71,8 @@ pub struct Loader<'a> {
 }
 
 impl<'a> Loader<'a> {
+    /// Instantiate a new Loader, given a mutable JGraph reference, along with 
+    /// mutable references toJGraphKeyMap and RegexMap instances.
     pub fn new(graph: &'a mut JGraph, keymap: &'a mut JGraphKeyMap, regexmap: &'a mut RegexMap) -> Self {
         // add in the root node
         keymap.insert(s!("root"), graph.add_node(Node::new_root()));
@@ -44,7 +82,7 @@ impl<'a> Loader<'a> {
         }
     }
 
-    /// Load 
+    /// Load the jspt data via the reader.
     pub fn load<R>(&mut self, reader: R) -> Result<(), JSPTemplateError> 
     where
         R: BufRead
@@ -92,7 +130,7 @@ impl<'a> Loader<'a> {
 
     fn process_edges(&mut self, edges: Vec<Edge>, line: &str, statemachine: &StateMachine) -> Result<(), JSPTemplateError> {
         for edge in edges {
-            let from_node = self.keymap.get(&edge.from).ok_or(
+            let from_node = self.keymap.get(&edge.from).ok_or_else(||
                 JSPTemplateLineError::from((
                     statemachine.line_number(),
                     line.to_owned(),
@@ -100,7 +138,7 @@ impl<'a> Loader<'a> {
                     JSPTemplateError::KeyMapLookupError(edge.from.clone())
                 ))
             )?;
-            let to_node = self.keymap.get(&edge.to).ok_or(
+            let to_node = self.keymap.get(&edge.to).ok_or_else(||
                 JSPTemplateLineError::from((
                     statemachine.line_number(),
                     line.to_owned(),
@@ -117,17 +155,15 @@ impl<'a> Loader<'a> {
         match node {
             // `rd`
             SNode::Simple(ref name, ref metadata) => {
-                //TODO:: convert to non macro to handle metadata
-                //self.keymap.insert(name.clone(), self.graph.add_node(jspnode!(name.clone())));
-                let entrytype = if is_volume(metadata) {EntryType::Volume} else {EntryType::Directory};
+                //let entrytype = if is_volume(metadata) {EntryType::Volume} else {EntryType::Directory};
+                let entrytype = if metadata.is_volume() {EntryType::Volume} else {EntryType::Directory};
+
                 self.keymap.insert(
                     name.clone(), 
                     self.graph.add_node( 
                         Node::new_simple(
                             NodeType::Simple(name.clone()),
                             entrytype,
-                            //EntryType::Directory,
-                            //JspMetadata::new()
                             new_jsp_metadata(metadata)
                         )
                     )
@@ -135,16 +171,15 @@ impl<'a> Loader<'a> {
             }
             // `rd = RD`
             SNode::Pair{ref name, ref value, ref metadata} => {
-                //self.keymap.insert(name.clone(), self.graph.add_node(jspnode!(value.clone())));
-                let entrytype = if is_volume(metadata) {EntryType::Volume} else {EntryType::Directory};
+                //let entrytype = if is_volume(metadata) {EntryType::Volume} else {EntryType::Directory};
+                let entrytype = if metadata.is_volume() {EntryType::Volume} else {EntryType::Directory};
+
                 self.keymap.insert(
                     name.clone(), 
                     self.graph.add_node( 
                         Node::new_simple(
                             NodeType::Simple(value.clone()),
-                            //EntryType::Directory,
                             entrytype,
-                            //JspMetadata::new()
                             new_jsp_metadata(metadata)
                         )
                     )
@@ -152,7 +187,7 @@ impl<'a> Loader<'a> {
             }
             // `rd = $rd_re`
             SNode::ReVar{ref name, ref variable, ref metadata} => {
-                let var = self.regexmap.get(variable).ok_or(
+                let var = self.regexmap.get(variable).ok_or_else(||
                     JSPTemplateLineError::from((
                         statemachine.line_number(),
                         line.to_owned(),
@@ -160,15 +195,14 @@ impl<'a> Loader<'a> {
                         JSPTemplateError::RegexMapLookupError(variable.clone()
                     ))
                 ))?;
-                let entrytype = if is_volume(metadata) {EntryType::Volume} else {EntryType::Directory};
+                //let entrytype = if is_volume(metadata) {EntryType::Volume} else {EntryType::Directory};
+                let entrytype = if metadata.is_volume() {EntryType::Volume} else {EntryType::Directory};
                 self.keymap.insert(
                     name.clone(), 
                     self.graph.add_node( 
                         Node::new_simple(
                             var.clone(),
-                            //EntryType::Directory,
                             entrytype,
-                            //JspMetadata::new()
                             new_jsp_metadata(metadata)
                         )
                     )
@@ -177,15 +211,15 @@ impl<'a> Loader<'a> {
             // `rd = "[a-z]+"`
             SNode::RegexSimple{ref name, ref re, ref metadata} => {
                 let regx = Regexp::new(format!("^{}$", re.as_str()).as_str())?;
-                let entrytype = if is_volume(metadata) {EntryType::Volume} else {EntryType::Directory};
+                //let entrytype = if is_volume(metadata) {EntryType::Volume} else {EntryType::Directory};
+                let entrytype = if metadata.is_volume() {EntryType::Volume} else {EntryType::Directory};
+
                 self.keymap.insert(
                     name.clone(), 
                     self.graph.add_node( 
                         Node::new_simple(
                             NodeType::new_regex( name.clone(), regx, None),
-                            //EntryType::Directory,
                             entrytype,
-                            //JspMetadata::new()
                             new_jsp_metadata(metadata)
                         )
                     )
@@ -195,15 +229,15 @@ impl<'a> Loader<'a> {
             SNode::RegexComplex{ref name, ref pos, ref neg, ref metadata} => {
                 let regx_pos = Regexp::new(format!("^{}$", pos.as_str()).as_str())?;
                 let regx_neg = Regexp::new(format!("^{}$", neg.as_str()).as_str())?;
-                let entrytype = if is_volume(metadata) {EntryType::Volume} else {EntryType::Directory};
+                //let entrytype = if is_volume(metadata) {EntryType::Volume} else {EntryType::Directory};
+                let entrytype = if metadata.is_volume() {EntryType::Volume} else {EntryType::Directory};
+
                 self.keymap.insert(
                     name.clone(), 
                     self.graph.add_node( 
                         Node::new_simple(
                             NodeType::new_regex( name.clone(), regx_pos, Some(regx_neg)),
-                            //EntryType::Directory,
                             entrytype,
-                            //JspMetadata::new()
                             new_jsp_metadata(metadata)
                         )
                     )
@@ -266,11 +300,16 @@ fn new_jsp_metadata( meta: &Option<crate::Metadata> ) -> JspMetadata {
     jspmeta
 }
 
-// 
-fn is_volume(meta: &Option<Metadata>) -> bool {
-    if let Some(meta) = meta {
-        meta.is_volume()
-    } else {
-        false
-    }
-}
+//
+// Replaced with a trait that provides a bit of sugar, allowing
+// us to call is_volume as a method on Option<Metadata>
+//
+// // check if metadata has option
+// fn is_volume(meta: &Option<Metadata>) -> bool {
+//     if let Some(meta) = meta {
+//         meta.is_volume()
+//     } else {
+//         false
+//     }
+// }
+
