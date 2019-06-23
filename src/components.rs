@@ -7,6 +7,8 @@ pub mod regex;
 pub use regex::Regex;
 pub mod node;
 pub use node::Node;
+pub mod metadata;
+pub use metadata::Metadata;
 
 #[derive(Debug,PartialEq,Eq)]
 pub enum ParseResult {
