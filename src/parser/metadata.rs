@@ -21,6 +21,7 @@ fn parse_components(input: &str) -> IResult<&str, Vec<MetadataComponent>> {
         parse_comma,
         alt((
             parse_volume,
+            parse_permissions,
             parse_owner,
         ))
         
@@ -54,6 +55,23 @@ mod parse_components_tests {
                 vec![
                      MetadataComponent::Volume, 
                      MetadataComponent::Owner("jgerber".to_string())
+                ]
+            ))
+        );
+    }
+
+    #[test]
+    fn can_parse_volume_and_owner_and_perms() {
+        let cmp = parse_components(" volume , owner : jgerber, perms: 751");
+        assert_eq!(
+           cmp,
+            Ok((
+                "",
+                vec![
+                     MetadataComponent::Volume, 
+                     MetadataComponent::Owner("jgerber".to_string()),
+                    MetadataComponent::Permissions("751".to_string())
+
                 ]
             ))
         );
