@@ -13,7 +13,7 @@ use std::{
     io::BufRead,
     collections::HashMap,
 };
-use jsp::{JGraph, NIndex, Node, Regexp, jspnode, EntryType, NodeType, Metadata};
+use jsp::{JGraph, NIndex, User, Node, Regexp, jspnode, EntryType, NodeType, Metadata as JspMetadata };
 use log;
 
 #[macro_use]
@@ -119,7 +119,7 @@ impl<'a> Loader<'a> {
                 self.keymap.insert(name.clone(), self.graph.add_node(jspnode!(value.clone())));
             }
             // `rd = $rd_re`
-            SNode::ReVar{ref name, ref variable} => {
+            SNode::ReVar{ref name, ref variable, ref metadata} => {
                 let var = self.regexmap.get(variable).ok_or(
                     JSPTemplateLineError::from((
                         statemachine.line_number(),
@@ -128,13 +128,15 @@ impl<'a> Loader<'a> {
                         JSPTemplateError::RegexMapLookupError(variable.clone()
                     ))
                 ))?;
+                
                 self.keymap.insert(
                     name.clone(), 
                     self.graph.add_node( 
                         Node::new_simple(
                             var.clone(),
                             EntryType::Directory,
-                            Metadata::new()
+                            //JspMetadata::new()
+                            new_jsp_metadata(metadata)
                         )
                     )
                 );
@@ -148,7 +150,7 @@ impl<'a> Loader<'a> {
                         Node::new_simple(
                             NodeType::new_regex( name.clone(), regx, None),
                             EntryType::Directory,
-                            Metadata::new()
+                            JspMetadata::new()
                         )
                     )
                 );
@@ -163,7 +165,7 @@ impl<'a> Loader<'a> {
                         Node::new_simple(
                             NodeType::new_regex( name.clone(), regx_pos, Some(regx_neg)),
                             EntryType::Directory,
-                            Metadata::new()
+                            JspMetadata::new()
                         )
                     )
                 );
@@ -191,6 +193,36 @@ impl<'a> Loader<'a> {
         }
         Ok(())
     }
-
 }
 
+/**
+ * FUggly 
+ * 
+ * This bit of conversion will go away once I unify the two metadata representations
+ */
+fn new_jsp_metadata( meta: &Option<crate::Metadata> ) -> JspMetadata {
+    let mut jspmeta = JspMetadata::new();
+
+    if let Some(meta) = meta {
+
+        if meta.owner().is_some() { 
+            let owner = meta.owner().unwrap();
+            jspmeta.set_owner(
+                Some(
+                    User::Named(owner.to_string()) 
+                )
+            );
+        }
+
+        if meta.permissions().is_some() {
+            let perms = meta.permissions().unwrap();
+            jspmeta.set_perms(Some(perms.to_string()));
+        }
+
+        if meta.varname().is_some() {
+            let varname = meta.varname().unwrap();
+            jspmeta.set_varname(Some(varname.to_string()));
+        }
+    }
+    jspmeta
+}
