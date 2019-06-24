@@ -9,7 +9,9 @@ use nom::{
 use crate::{Header, ParseResult};
 
 
-/// Parse the section header of the format
+/// Parse the section header, consisting of an identifier surounded by square
+/// brackets. 
+/// EG
 /// [regex]
 pub fn parse_section_header(input: &str) -> IResult<&str, ParseResult> {
     map ( 

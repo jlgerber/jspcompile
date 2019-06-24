@@ -11,7 +11,9 @@ use nom::{
 
 use crate::{Metadata, MetadataComponent, helpers::{variable, perm_chars} };
 
-/// parse Metadata
+/// Parses metadata from a a str, identifed from a list of identifiers surounded by
+/// square brackets. 
+/// Note that this parser must be applied before the header parser to be effective. 
 pub fn parse_metadata(input: &str) -> IResult<&str, Metadata> {
     map(
         parse_components,

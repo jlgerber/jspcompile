@@ -11,7 +11,7 @@ use crate::helpers::*;
 
 use crate::{Regex,ParseResult};
 
-/// Parse regex line. Could be either simple or complex
+/// Parse regex from an input &str. Could be either simple or complex
 pub fn parse_regex(input: &str) -> IResult<&str,  ParseResult> {
     alt((
         parse_regex_complex,
@@ -49,7 +49,8 @@ mod parse_regex {
     }
 }
 
-// parse simple regex - that is:
+// parse simple regex
+// EG
 // num_under =   "[0-9_]+"
 fn parse_regex_simple(input: &str) -> IResult<&str,  ParseResult> {
     map ( 
@@ -65,7 +66,6 @@ fn parse_regex_simple(input: &str) -> IResult<&str,  ParseResult> {
     ) 
     (input)
 }
-
 
 #[cfg(test)]
 mod parse_regex_simple {
@@ -111,7 +111,8 @@ mod parse_regex_simple {
     }
 }
 
-// parse complex regex, which has positive and negative matches
+// Parsex complex regex from input &str, which has positive and negative matches
+// EG
 // shot =   "[0-9_a-zA-Z]+" "(etc|SHARED|lib)"
 fn parse_regex_complex(input: &str) -> IResult<&str,  ParseResult> {
     map ( 

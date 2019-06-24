@@ -15,6 +15,10 @@ pub enum MetadataComponent {
     //AutoCreate
 }
 
+/// Tracks the supported metadata values in the template, delimited
+/// in the Node section by square brackets. 
+/// EG
+/// `[ volume, owner:$me, perms: 777 ]`
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Metadata {
     volume: bool,
@@ -24,7 +28,8 @@ pub struct Metadata {
 }
 
 impl Metadata {
-    /// new up metadata
+    /// new up an empty `Metadata` instance. By default, Metadata is not a volume,
+    /// and all of its optional fields are set to None. 
     pub fn new() -> Self {
         Self {
             volume: false,
@@ -34,6 +39,8 @@ impl Metadata {
         }
     }
 
+    /// Determine whether the Metadata instance is empty, defined as the volume field being false, 
+    /// and all of the optional terms being None. 
     pub fn is_empty(&self) -> bool {
         self.volume == false && self.permissions.is_none() && self.varname.is_none() && self.owner.is_none()
     }

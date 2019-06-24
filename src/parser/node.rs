@@ -11,7 +11,8 @@ use crate::helpers::*;
 
 use crate::{Node, ParseResult, parse_metadata};
 
-/// Parse node
+/// Parses a Node given an input str. The parser is composed of a number
+/// of alternative parsers targetting specific types of nodes. 
 pub fn parse_node(input: &str) -> IResult<&str, ParseResult> {
     alt((
         parse_node_pair,
@@ -65,7 +66,8 @@ fn parse_node_simple(input: &str) -> IResult<&str, ParseResult> {
         parse_node_simple_nometa,
     ))(input)
 }
-// parse simple node - that is:
+// parse simple node witout metadata
+// EG
 // rd_node =   rd
 fn parse_node_simple_nometa(input: &str) -> IResult<&str,  ParseResult> {
     map ( 
@@ -77,6 +79,9 @@ fn parse_node_simple_nometa(input: &str) -> IResult<&str,  ParseResult> {
     (input)
 }
 
+// parse the simple node with metadata
+// EG
+//rd_node =   rd [volume, owner:jgerber ]
 fn parse_node_simple_meta(input: &str) -> IResult<&str,  ParseResult> {
     map ( 
         tuple((
@@ -131,6 +136,9 @@ fn parse_node_pair(input: &str) -> IResult<&str,  ParseResult> {
     ))(input)
 }
 
+// parse a node pari without metadata
+// EG
+// rd_node = rd 
 fn parse_node_pair_nometa(input: &str) -> IResult<&str,  ParseResult> {
     map ( 
             tuple((
@@ -146,6 +154,9 @@ fn parse_node_pair_nometa(input: &str) -> IResult<&str,  ParseResult> {
     (input)
 }
 
+// parse a node pair with metadata
+// EG
+// rd_node = rd [ owner: foobar ]
 fn parse_node_pair_meta(input: &str) -> IResult<&str,  ParseResult> {
     map ( 
             tuple((
@@ -185,6 +196,9 @@ mod parse_node_pair {
 
 }
 
+// parse a Node::ReVar from input, with or without metadata. 
+// eg
+// rd = $rd
 fn parse_node_revar(input: &str) -> IResult<&str,  ParseResult> {
     alt((
         parse_node_revar_meta,
@@ -193,7 +207,8 @@ fn parse_node_revar(input: &str) -> IResult<&str,  ParseResult> {
     (input)
 }
 
-// parse regex variable node. regex node references a named regex
+// parse regex variable node without metadata. regex node references a named regex. 
+// EG
 // `rd_node =   $rd`
 fn parse_node_revar_nometa(input: &str) -> IResult<&str,  ParseResult> {
     map ( 
@@ -213,6 +228,9 @@ fn parse_node_revar_nometa(input: &str) -> IResult<&str,  ParseResult> {
     (input)
 }
 
+// Parse a regex variable node with metadata from a &str.
+// EG
+// rd = $rd [volume]
 fn parse_node_revar_meta(input: &str) -> IResult<&str,  ParseResult> {
     map ( 
             tuple((
@@ -252,6 +270,9 @@ mod parse_node_revar {
     }
 }
 
+// parse a simple regex node from input with our without metadata.
+// eg
+// rd_mode = $rd [volume]
 fn parse_node_regexsimple(input: &str) -> IResult<&str,  ParseResult> {
     alt((
         parse_node_regexsimple_meta,
@@ -260,7 +281,7 @@ fn parse_node_regexsimple(input: &str) -> IResult<&str,  ParseResult> {
     (input)
 }
 
-// parse regex variable node. regex node references a named regex
+// parse regex variable node without metadata. regex node references a named regex
 // `rd_node =   $rd`
 fn parse_node_regexsimple_nometa(input: &str) -> IResult<&str,  ParseResult> {
     map ( 
@@ -280,6 +301,9 @@ fn parse_node_regexsimple_nometa(input: &str) -> IResult<&str,  ParseResult> {
     (input)
 }
 
+// parse a simple regex node with metadata 
+// eg
+// rd = $rd [owner: jgerber]
 fn parse_node_regexsimple_meta(input: &str) -> IResult<&str,  ParseResult> {
     map ( 
             tuple((
@@ -299,6 +323,7 @@ fn parse_node_regexsimple_meta(input: &str) -> IResult<&str,  ParseResult> {
     ) 
     (input)
 }
+
 #[cfg(test)]
 mod parse_node_regexsimple {
     use super::*;
@@ -318,6 +343,7 @@ mod parse_node_regexsimple {
     }
 }
 
+// parse a complex regex node from a &str input with or without metadata.
 fn parse_node_regexcomplex(input: &str) -> IResult<&str,  ParseResult> {
     alt((
         parse_node_regexcomplex_meta,
@@ -325,7 +351,9 @@ fn parse_node_regexcomplex(input: &str) -> IResult<&str,  ParseResult> {
     ))
     (input)
 }
-// parse regex variable node. regex node references a named regex
+
+// parse regex variable node without metadata. regex node references a named regex
+// EG
 // `rd_node =   $rd`
 fn parse_node_regexcomplex_nometa(input: &str) -> IResult<&str,  ParseResult> {
     map ( 
@@ -346,6 +374,9 @@ fn parse_node_regexcomplex_nometa(input: &str) -> IResult<&str,  ParseResult> {
     (input)
 }
 
+// parse a complex regex node with metadata from an input &str. 
+// eg
+// rd_node = $rd [volume ]
 fn parse_node_regexcomplex_meta(input: &str) -> IResult<&str,  ParseResult> {
     map ( 
             tuple((
@@ -366,6 +397,7 @@ fn parse_node_regexcomplex_meta(input: &str) -> IResult<&str,  ParseResult> {
     ) 
     (input)
 }
+
 #[cfg(test)]
 mod parse_node_regexcomplex {
     use super::*;

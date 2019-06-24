@@ -8,18 +8,20 @@
 //! Jspcompile currently handles this via loose functions. 
 use colored::*;
 
+#[derive(Debug, ParitalEq, Eq)]
 pub struct Console {
     error_color: String,
 }
 
 impl Console {
-
+    /// New up a console, given an error_color of a type which implements Into<String>
     pub fn new<S>(error_color: S) -> Console where S: Into<String> {
         Console {
             error_color: error_color.into(),
         }
     }
 
+    /// Display an error, given an error of a type which implements ToString.
     pub fn error<E>(&self, error:E) where E:ToString {
         println!("");
         println!("{}", "Error".color(self.error_color.as_str()).bold());
@@ -27,6 +29,9 @@ impl Console {
         println!("");
     }
 
+    /// Display an Error at a supplied context and error, wherein the context consists of
+    /// a line number, line, and Statemachine State, and the error is of a type which implements
+    /// ToString. 
     pub fn error_at<E>(&self, line_num: usize, line: &str, state: &State, error: E ) where E: ToString {
         println!("");
         let error_title = "Error".color(self.error_color.as_str()).bold();

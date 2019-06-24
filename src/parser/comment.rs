@@ -8,7 +8,17 @@ use nom::{
 
 use crate::ParseResult;
 
-
+/// Parser function which parses a comment given a string. A comment
+/// is defined as zero or more spaces, followed by a '#', followed by 
+/// anything.
+/// 
+/// # Parameters
+/// 
+/// * `input` - a &str 
+/// 
+/// # Returns
+/// an IResult having an Ok value of (&str, ParseResult), and an Err
+/// value of (&str, ErrorKind)
 pub fn parse_comment(input: &str) -> IResult<&str, ParseResult> {
     map(
         preceded(

@@ -28,7 +28,9 @@ impl fmt::Display for State {
     }
 }
 
-/// Mange state transitions for parsing the jsptemplate file
+/// Responsible for Manging state transitions and for parsing 
+/// the jsptemplate file appropriately given the current state, 
+/// on a per line basis.
 pub struct StateMachine {
     // The current state of the StateMachine
     state: State,
@@ -65,6 +67,7 @@ impl StateMachine {
     pub fn state(&self) -> &State {
         &self.state
     }
+
     /// Parse the current line of input, possibly transitioning to the next 
     /// state, depending upon the current line. 
     /// In this case, if the input is a Header, transition
@@ -90,7 +93,7 @@ impl StateMachine {
             State::Done  => Err(JSPTemplateError::DoneState),
             State::Error => Err(JSPTemplateError::ErrorState),
         };
-        // outer result determines whether the statemachine is in a state 
+        // Outer result determines whether the statemachine is in a state 
         // that can parse lines. Neither the Done state nor the Error state 
         // qualify as such.
         match parsed_line {

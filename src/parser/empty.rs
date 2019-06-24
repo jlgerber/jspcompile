@@ -6,6 +6,7 @@ use nom::{
 
 use crate::ParseResult;
 
+/// A parser that parses an input and identifies spaces only.
 pub fn parse_empty(input: &str) -> IResult<&str, ParseResult> {
     map(
         multispace0, 
