@@ -148,10 +148,11 @@ impl<'a> Loader<'a> {
                                 log::info!("line: {} {:?}", statemachine.line_number(), edges);
                                 
                                 // deal with root
-                                if edges.len() > 0 && edges[0].from != "root" {
-                                    let root = Edge::new(s!("root"), edges[0].from.clone());
-                                    self.process_edges(vec![root],line.as_str(), &statemachine)?;
-                                }
+                                // this is not where this belongs
+                               // if edges.len() > 0 && edges[0].from != "root" {
+                                //    let root = Edge::new(s!("root"), edges[0].from.clone());
+                                //    self.process_edges(vec![root],line.as_str(), &statemachine)?;
+                                //}
                                 self.process_edges(edges, line.as_str(), &statemachine)?;
                             }
                         }
@@ -169,6 +170,7 @@ impl<'a> Loader<'a> {
     // We provide the line and statemachine for context in the case of failure. 
     fn process_edges(&mut self, edges: Vec<Edge>, line: &str, statemachine: &StateMachine) -> Result<(), JSPTemplateError> {
         for edge in edges {
+            log::debug!("Adding edge for {:?}", &edge);
             let from_node = self.keymap.get(&edge.from).ok_or_else(||
                 JSPTemplateLineError::from((
                     statemachine.line_number(),
