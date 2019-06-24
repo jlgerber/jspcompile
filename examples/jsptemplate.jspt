@@ -1,0 +1,289 @@
+[regex]
+num_n_under = "[0-9_]+"
+lower_num_dot_dash_under = "[a-z0-9._-]" 
+[node]
+refdir = REF [volume]
+quicktimes = quicktimes [perms: 751]
+qtsubdir = $num_n_under
+clientvault = CLIENT_VAULT [volume]
+clientvault_subdir = "(incoming|outgoing)"
+clientvault_ssd = "[0-9_]+"
+slatesNcategories = "(SLATES|CATGORIES)"
+snc_sd = $lower_num_dot_dash_under
+locations = LOCATIONS 
+loc_sd = $lower_num_dot_dash_under
+loc_ssd = $lower_num_dot_dash_under
+documents
+doc_sd = "(agency|director_treatments|vfx_methodology|schedules|scripts|storyboards)"
+audio
+audio_sd = "(mixes|sources)"
+threed = "3d"
+threed_sd = "(3d_assets|mocap)"
+chars = CHARACTERS 
+chars_sd = "[a-z0-9_]+", "(DEVL|SHARED|etc|lib|bin|user)"
+
+      
+#        //-------------------------//
+#        //    ANY LEVEL NODES      //
+#        //-------------------------//
+
+        /* These nodes may appear at any level in the graph */
+
+        /*   TOOLS  */
+
+        let tools = graph.add_node(jspnode!("tools")); // 0751 ddinst
+        let logs = graph.add_node(jspnode!("logs")); // 0771
+        let package = graph.add_node(jspnode!("package"));
+        let extension = graph.add_node(jspnode!("extension"));
+        let bin = graph.add_node(jspnode!("bin"));
+        let etc = graph.add_node(jspnode!("etc")); //0751 ddinst
+        let lib = graph.add_node(jspnode!("lib")); //ddinst
+        let lib_sd = graph.add_node(
+            jspnode!("lib_sd", r"^(config|cortex|dmx|houdini|integ|jspools|katana|lw|massive|max|maya|mentalray|mkfoldy|moco|mova|nfb|nuke|perl|python[0-9.]*|race|refchef|rman|scratch|setupenv|shader|shoot2x|submission|vray|wam|web)$") // 0771
+        );
+        let prod = graph.add_node(jspnode!("prod", "perms"=>"755")); 
+        let docs = graph.add_node(jspnode!("docs", "perms"=>"771"));
+
+        /*   USER WORK  */
+
+        let user = graph.add_node(jspnode!("user", "perms"=>"751").set_volume()); 
+        let work = graph.add_node(
+            jspnode!(
+                "work", 
+                r"^work\.(?P<work>[a-z]+)$", 
+                "owner" => "$work", 
+                "perms"=>"770",
+                "varname" => "DD_WORK"
+            )
+        );  //default 0555
+
+        /*   SHARED   */
+
+        let shared = graph.add_node(jspnode!("SHARED"));
+        let shared_dirs = graph.add_node(jspnode!("dept", r"^(PREVIZ|INTEG|MODEL|RIG|ANIM|CFX|LIGHT|ENVIRO|FX|COMP|IMG)$"));
+        let category = graph.add_node(jspnode!("category", r"^(char|prop|veh|scene|enviro|kit)$", "varname" => "DD_CATEGORY"));
+        let dept = graph.add_node(jspnode!("department", r"^(integ|model|previz|postviz|enviro|rig|anim|fx|cfx|light|comp|lookdev|shotmodel)$"));
+        let subcontext = graph.add_node(jspnode!("subcontext", r"^[a-z]+([_]{0,1}[a-z0-9])*$", "varname" => "DD_SUBCONTEXT"));
+
+        //------------------------//
+        //    SHOW LEVEL NODES    //
+        //------------------------//
+
+        /*   ASSETDEV */
+
+        let assetdev = graph.add_node(jspnode!("ASSETDEV", "varname" => "DD_SEQUENCE"));
+        let adshot = graph.add_node(jspnode!("assetdev shot", r"^([A-Z][A-Z0-9]+[_]{0,1})+[A-Z0-9]+$", "varname" => "DD_SHOT"));
+
+        /*   CLIENT   */
+
+        let client_dd_edit = graph.add_node(jspnode!("client_dd_edit", r"^(CLIENT|DD)$").set_volume());
+        let client_dd_edit_sd = graph.add_node(
+            jspnode!("client_dd_edit_sd",r"^(([0-9]{4,5})|([0-9]{1,2}?[a-z]+)|([a-z]{2}[0-9]{4,5}))$")
+        );
+        let color = graph.add_node(jspnode!("color"));
+
+        /*  OUTSOURCE  */
+
+        let outsource = graph.add_node(jspnode!("OUTSOURCE").set_volume());
+        let outsource_sd = graph.add_node(jspnode!("outsource_sd", r"^[a-zA-Z0-9_.]+$"));  // default 555
+        let outsource_sdd = graph.add_node(
+            jspnode!( "outsource_sdd", r"[a-zA-Z0-9_.]+^$", r"^prod$", "perms"=>"770")
+        ); // (?!(\bprod\b))
+
+        /*  FINALS */
+
+        let finals = graph.add_node(jspnode!("FINALS", "perms"=>"750")); 
+        let finals_sd = graph.add_node(jspnode!("finals_sd", r"[0-9_]+"));
+
+        /*  CONFORM  */
+
+        let conform = graph.add_node(jspnode!("CONFORM"));
+        let conform_sd =graph.add_node(jspnode!("conform_sd", r"^[a-z0-9_]+$"));
+        // conform can also have SHARED as subdir as well as user docs and prod
+
+        /*  ART DEPT AND EDITORIAL */
+
+        let artdept = graph.add_node(jspnode!("ARTDEPT"));
+        let artdept_sd = graph.add_node(jspnode!("artdept_sd", r"^[a-zA-Z0-9_.-]+$", "perms"=>"770")); 
+        let storyboard = graph.add_node(jspnode!("STORYBOARD"));
+        let storyboard_sd = graph.add_node(
+            jspnode!("storyboard_sd", r"^[0-9]{2}_[0-9]{4}$", "perms" => "770")
+        );
+        let editorial = graph.add_node(jspnode!("STORYBOARD"));
+        let film_lens = graph.add_node(jspnode!("film_lens", r"^(FILM|LENS)$"));
+
+        /*  DAILIES */
+
+        let dailies = graph.add_node(jspnode!("DAILIES"));
+
+        //--------------------//
+        //      SEQUENCE      //
+        //--------------------//
+
+        let sequence = graph.add_node(
+            jspnode!(
+                "sequence", 
+                r"^(([A-Z]{2,4})|LIBRARY)$", 
+                r"^(SHARED|etc|lib|tool|user|bin)$",
+                "varname" => "DD_SEQUENCE"
+            )
+        );
+
+        //---------------------//
+        //         SHOT        //
+        //---------------------//
+
+        let shot = graph.add_node(
+            jspnode!(
+                "shot", 
+                r"^[0-9]+[A-Z0-9]*$",
+                "varname" => "DD_SHOT"
+            )
+        );
+
+        //-------------------//
+        //   GRAPH EDGES     //
+        //-------------------//
+
+        graph.extend_with_edges(&[
+            (root, dd),
+            (dd, shows),
+            (shows, show),
+            (show, tools),
+            (show, logs),
+            (show, etc),
+            (show, refdir),
+              (refdir, quicktimes),
+                (quicktimes, qtsubdir),
+              (refdir, clientvault),
+                (clientvault, clientvaultsd),
+                  (clientvaultsd, clientvaultssd),
+              (refdir, slates_n_categories),
+                (slates_n_categories, snc_sd),
+              (refdir, locations),
+                (locations, loc_sd),
+                  (loc_sd, loc_ssd),
+              (refdir, documents),
+                (documents, doc_sd),
+              (refdir, audio),
+              (refdir, audio_sd),
+              (refdir, threed),
+                (threed, threed_sd),
+              (refdir, chars),
+                (chars, chars_sd),
+        ]);
+
+        graph.extend_with_edges(&[
+            (tools, package),
+            (tools, extension),
+            (tools, bin),
+            (show, etc),
+            (show, color),
+            (show, user),
+              (user, work),
+            (show, client_dd_edit),
+              (client_dd_edit, client_dd_edit_sd),
+            (show, shared),
+              (shared, etc),
+              (shared, shared_dirs),
+            (show, lib),
+              (lib, lib_sd),
+            (show, prod),
+            (show, docs),
+            (show, outsource),
+              (outsource, outsource_sd),
+                (outsource_sd, outsource_sdd),
+            (show, finals),
+              (finals, finals_sd),
+            (show, conform),
+              (conform, user),
+              (conform, shared),
+              (conform, conform_sd),
+              (conform, docs),
+              (conform, prod),
+        ]);
+
+        graph.extend_with_edges(&[
+            (show, artdept),
+              (artdept, artdept_sd),
+            (show, storyboard),
+              (storyboard, storyboard_sd),
+            (show, editorial),
+            (show, film_lens),
+            (show, dailies),
+        ]);
+        
+        graph.extend_with_edges(&[
+            (shared_dirs, category),
+            (category, dept),
+            (dept, subcontext),
+            (show, sequence),
+              (sequence, tools),
+              (sequence, etc),
+              (sequence, shared),
+              (sequence, user),
+              (sequence, shot),
+              (sequence, lib),
+              (sequence, prod),
+            (show, assetdev),
+            (assetdev, adshot),
+
+        ]);
+
+        graph.extend_with_edges(&[
+            (shot, tools),
+            (shot, etc),
+            (shot, shared),
+            (shot, user),
+            (shot, lib),
+            (shot, prod),
+            (adshot, tools),
+            (adshot, etc),
+            (adshot, shared),
+            (adshot, user),
+            (adshot, prod),
+            (adshot, docs),
+[regex]
+
+num_under =   "[0-9_]+"
+quicktimes =  "quicktimes"
+qtsubdir   =  "[0-9_]+" 
+doc_sd     =  "(agency|director_treatments|vfx_methodology|schedules|scripts|storyboards)"
+chars_sd   =  "(DEVL|SHARED|etc|lib|bin|user)"
+level       = "[A-Z]+[A-Z0-9]*" "(REF|SHARED|OUTSOURCE|LOCATIONS)"
+
+[nodes]
+
+# nodes are the directories and files in the template. They may be simple, like:
+dd  
+shows
+# or more complex, like:
+show            = $level  [ varname:DD_SHOW, owner: jobsys, perms: 751 ]
+
+# $vars refer to the regex section above 
+seq             = $level [ varname:DD_SEQUENCE, owner: jobsys, perms: 751 ]
+shot            = $level [ varname:DD_SHOT, owner: jobsys, perms: 751 ]
+refdir          = REF 
+shared          = SHARED
+img             = IMG
+quicktimes      = $quicktimes 
+qtsubdir        = $qtsubdir
+clientvault     = CLIENT_VAULT
+    
+# but you don't have to name your regex. you may also just write regec inline
+clientvault_sd  = "(incoming|outgoing)"
+clientvault_ssd = "[0-9_]+"
+
+[graph]
+
+# each pair of nodes define an edge. Notice that we 
+# are not limited to an edge per line
+dd -> shows -> show -> seq -> shot
+
+# The graph section is where you wire up nodes
+dd -> refdir -> quicktimes
+
+# speculative shared -> img | model | anim | fx 
+show -> shared
+seq  -> shared
+shot -> shared
