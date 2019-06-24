@@ -1,9 +1,9 @@
 use chrono;
 use colored::Colorize;
-use log::{ LevelFilter, self};
 use fern::{ colors::{Color, ColoredLevelConfig}, self} ;
-use jsp::{JGraph, diskutils};
-use jspcompile::{JSPTemplateError, Loader, State, RegexMap, JGraphKeyMap};
+use jsp::diskutils;
+use jspcompile::{JSPTemplateError, Loader, State};
+use log::{ LevelFilter, self};
 use std::{fs::File,io::BufReader, path::PathBuf};
 use structopt::StructOpt;
 
@@ -60,12 +60,11 @@ fn doit() -> Result<(), JSPTemplateError> {
     let file = File::open(opt.input)?;
     let bufreader =  BufReader::new(file);
 
-    // lets create stuff
-    let mut graph = JGraph::new();
-    let mut keymap = JGraphKeyMap::new();
-    let mut regexmap = RegexMap::new();
-
+    // lets create structs that Loader::new requires
+    let (mut graph, mut keymap, mut regexmap) = Loader::setup();
+    // and now call Loader::new with them.
     let mut loader = Loader::new(&mut graph, &mut keymap, &mut regexmap);
+
     loader.load(bufreader)?;
     if let Some(ref mut output) = opt.output {
         diskutils::write_template(output, &graph);
