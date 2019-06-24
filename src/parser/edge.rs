@@ -23,7 +23,7 @@ pub fn parse_edges(input: &str) -> IResult<&str, ParseResult> {
             many1(
                 preceded(
                     tag("->"),
-                    delimited(space0, alphanumeric1, space0)
+                    delimited(space0, variable, space0)
                 )
             ),
         )),
