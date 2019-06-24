@@ -1,6 +1,6 @@
 [package]
 name = "jspcompile"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["jgerber"]
 edition = "2018"
 
@@ -16,6 +16,5 @@ ext_regex = {package = "regex", version = "1.1.7"}
 
 [dependencies.jsp]
 git = "https://github.com/jlgerber/jobsyspolice.git"
-#tag = "v0.34.0"
-branch = "regex_new"
-#path = "../jobsyspolice"
+tag = "v0.35.0"
+#branch = "regex_new"
