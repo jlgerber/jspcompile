@@ -8,4 +8,7 @@ install:
 all: build install
 
 test:
-	cargo test --release	
+	cargo test --release
+
+clean:
+	rm -rf target	

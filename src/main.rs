@@ -28,7 +28,8 @@ struct Opt {
     output: Option<PathBuf>,
 }
 
-
+// main is used to capture the Result of doit and provide appropriate presentation
+// to the end user before exiting
 fn main() {
     match doit(){
         Ok(_) => (),
@@ -46,7 +47,7 @@ fn main() {
     }
 }
 
-
+// guts of main. 
 fn doit() -> Result<(), JSPTemplateError> {
     let (mut opt, level) = setup_cli();
     setup_logger(level).unwrap();
@@ -107,6 +108,7 @@ fn display_formatted_error(
     println!("")
 }
 
+// Set up the Fern logger with colors.
 fn setup_logger(level: log::LevelFilter) -> Result<(), fern::InitError> {
     let  colors = ColoredLevelConfig::new()
         .error(Color::Red)
@@ -131,6 +133,9 @@ fn setup_logger(level: log::LevelFilter) -> Result<(), fern::InitError> {
     Ok(())
 }
 
+// Set up optparse and convert the level to a levelfilter 
+// if provided. 
+// (I wonder if LevelFilter already implements From<&str> for LevelFilter?)
 fn setup_cli() -> (Opt, log::LevelFilter) {
     let args = Opt::from_args();
     let level = match args.level.as_str() {

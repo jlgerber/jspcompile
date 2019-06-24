@@ -9,7 +9,7 @@ use nom::{
 };
 use crate::helpers::*;
 
-use crate::{Node, ParseResult, Metadata, parse_metadata};
+use crate::{Node, ParseResult, parse_metadata};
 
 /// Parse node
 pub fn parse_node(input: &str) -> IResult<&str, ParseResult> {
@@ -97,6 +97,7 @@ fn parse_node_simple_meta(input: &str) -> IResult<&str,  ParseResult> {
 mod parse_node_simple {
     use super::*;
     //use nom::error::ErrorKind;
+    use crate::Metadata;
 
     #[test]
     fn can_parse_node_simple() {
@@ -167,6 +168,7 @@ fn parse_node_pair_meta(input: &str) -> IResult<&str,  ParseResult> {
 mod parse_node_pair {
     use super::*;
     //use nom::error::ErrorKind;
+    use crate::Metadata;
 
     #[test]
     fn can_parse_node_pair() {

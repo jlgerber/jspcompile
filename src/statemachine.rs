@@ -3,6 +3,8 @@ use crate::{ParseResult, Header, start_parser, regex_parser, node_parser, edge_p
 use std::cell::Cell;
 use std::fmt;
 
+/// The states that the StateMachine may transition through, from the start (Start)
+/// to the two possible terminal states (Done, Error). 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub enum State {
     Start,
@@ -26,10 +28,15 @@ impl fmt::Display for State {
     }
 }
 
-/// Mange state transitions for parsing the jspt file
+/// Mange state transitions for parsing the jsptemplate file
 pub struct StateMachine {
+    // The current state of the StateMachine
     state: State,
+    // The current line number.
     line: Cell<usize>,
+    // a tuple of parsers corresponding with the states
+    // that we will be passing through. This can be a tuple
+    // as the transitions are well defined. 
     parsers: (
         fn(&str)->IResult<&str, ParseResult>,
         fn(&str)->IResult<&str, ParseResult>,
@@ -39,7 +46,7 @@ pub struct StateMachine {
 }
 
 impl StateMachine {
-
+    /// New up a StateMachine instance
     pub fn new() -> StateMachine {
         StateMachine {
             state: State::Start,
@@ -54,12 +61,22 @@ impl StateMachine {
         self.line.get()
     }
 
-    /// Retrieve the state reference
+    /// Retrieve a reference to the current state. 
     pub fn state(&self) -> &State {
         &self.state
     }
-    /// Parse teh current line of input. If the input is a Header, transition
-    /// the statemachine to the next valid state.
+    /// Parse the current line of input, possibly transitioning to the next 
+    /// state, depending upon the current line. 
+    /// In this case, if the input is a Header, transition
+    /// the statemachine to the next valid state, as defined internally.
+    ///
+    /// The state graph should look something like: 
+    /// `Start -> RegexParsing -> NodeParsing -> EdgeParseing -> Done`
+    /// assuming that the headers appear in order. One may transition back and forth, 
+    /// using the headers. However one may not depend upon another state's contents before
+    /// said contents has been processed. 
+    /// IE if one cannot reference a `regex` from the `node` state before the aforementioned
+    /// regex has been parsed. 
     pub fn parse(&mut self, input: &str) -> Result<ParseResult, JSPTemplateLineError> {
         self.line.set(self.line.get() + 1);
         // parse current line if the statemachine is in a state that has a parser
@@ -132,7 +149,7 @@ impl StateMachine {
         }
     }
 
-    // retrieve the next state in the statemachine given the current state
+    // Retrieve the next state in the statemachine given the current state
     fn next_valid_state(&self) -> Result<State, JSPTemplateError> {
         match self.state {
             State::Start        => Ok(State::RegexParsing),
