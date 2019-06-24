@@ -3,7 +3,16 @@
 num_n_under              = "[0-9_]+"
 lower_num_dot_dash_under = "[a-z0-9._-]" 
 lower_number_dash        = "[a-z0-9_]+"
+
+
 [nodes]
+
+// pre show 
+dd
+shows
+show = "[A-Z]+[A-Z0-9]*" "(REF|SHARED|OUTSOURCE|LOCATIONS)" [owner: jobsys, perms: 751, varname: DD_SHOW]
+
+// REF AND SHOW LEVEL 
 
 refdir             = REF          [volume]
 quicktimes         = quicktimes   [perms: 751]
@@ -23,7 +32,9 @@ audio_sd           = "(mixes|sources)"
 threed             = "3d"
 threed_sd          = "(3d_assets|mocap)"
 chars              = CHARACTERS 
-chars_sd           = $lower_number_dash "(DEVL|SHARED|etc|lib|bin|user)"
+
+// chars_sd           = $lower_number_dash "(DEVL|SHARED|etc|lib|bin|user)"
+chars_sd           = "[a-z0-9_]+" "(DEVL|SHARED|etc|lib|bin|user)"
 
       
 //-------------------------//
@@ -46,7 +57,10 @@ docs       [perms: 771]
 
 user                            [volume, perms: 751]
 //default 0555
-work = "work\.(?P<work>[a-z]+)" [owner: $work, perms: 770, varname: DD_WORK]
+
+// problem handling variable after owner 
+//work = "work\.(?P<work>[a-z]+)" [owner: $work, perms: 770, varname: DD_WORK]
+work = "work\.(?P<work>[a-z]+)" [owner: work, perms: 770, varname: DD_WORK]
 
 //   SHARED 
 
@@ -123,7 +137,7 @@ root -> dd -> shows -> show -> sequence -> shot
 
 // SHARED 
 
-shared -> depts -> category -> dept -> subcontext 
+shared -> depts -> category -> department -> subcontext 
 
 // REFERENCE DIR
 
