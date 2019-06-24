@@ -23,7 +23,7 @@ pub fn parse_section_header(input: &str) -> IResult<&str, ParseResult> {
         | item| {
             let (_,header,_) = item ;
             match header {
-                "regex" | "regexp" => ParseResult::Header(Header::Regex),
+                "regex" | "regexp" | "re" => ParseResult::Header(Header::Regex),
                 "nodes" | "node" => ParseResult::Header(Header::Node),
                 "graph" => ParseResult::Header(Header::Edge),
                 _ => ParseResult::Header(Header::Unknown(header.to_string())),
