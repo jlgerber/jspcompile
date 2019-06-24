@@ -80,6 +80,24 @@ pub struct Loader<'a> {
 }
 
 impl<'a> Loader<'a> {
+
+    /// Setup data structures prior to newing up Loader 
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use jspcompile::Loader;
+    /// 
+    /// let (mut graph, mut keymap, mut regexmap) = Loader::setup();
+    /// let loader = Loader::new(&mut graph, &mut keymap, &mut regexmap);
+    /// ```
+    pub fn setup() -> (JGraph, JGraphKeyMap, RegexMap) {
+        let graph = JGraph::new();
+        let keymap = JGraphKeyMap::new();
+        let regexmap = RegexMap::new();
+        (graph, keymap, regexmap)
+    }
+
     /// Instantiate a new Loader, given a mutable JGraph reference, along with 
     /// mutable references toJGraphKeyMap and RegexMap instances.
     pub fn new(graph: &'a mut JGraph, keymap: &'a mut JGraphKeyMap, regexmap: &'a mut RegexMap) -> Self {
