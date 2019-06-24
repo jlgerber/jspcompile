@@ -19,6 +19,10 @@ struct Opt {
     #[structopt(short = "d", long = "debug")]
     debug: bool,
 
+    /// ougput dot graph instead of template
+    #[structopt( long = "dot")]
+    dotgraph: bool,
+
     /// Input jspt file
     #[structopt(parse(from_os_str))]
     input: PathBuf,
@@ -67,7 +71,12 @@ fn doit() -> Result<(), JSPTemplateError> {
 
     loader.load(bufreader)?;
     if let Some(ref mut output) = opt.output {
-        diskutils::write_template(output, &graph);
+        if opt.dotgraph {
+            diskutils::write_template_as_dotfile(output, &graph);
+        } else {
+
+            diskutils::write_template(output, &graph);
+        }
     }
     Ok(())
 }
