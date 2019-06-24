@@ -1,9 +1,9 @@
 use nom::{
     IResult,
-    sequence::{preceded, delimited, separated_pair, terminated},
+    sequence::{tuple, preceded, delimited, separated_pair, terminated},
     bytes::complete::tag,
     branch::alt,
-    combinator::map,
+    combinator::{map, recognize},
     //error::ErrorKind,
     character::complete::space0,
     multi::separated_nonempty_list,
@@ -164,7 +164,14 @@ fn parse_owner(input: &str) -> IResult<&str, MetadataComponent> {
             separated_pair(
                 tag("owner"),
                  preceded(space0,tag(":")), 
-                 preceded(space0, variable)
+                 preceded(
+                    space0,
+                    alt((
+                        variable,
+                        recognize(tuple((tag("$"), variable)))
+                    )) 
+                 )
+
             ), 
             space0,
         ),
@@ -190,6 +197,13 @@ mod tests {
        let owner = parse_owner("owner : fred");
        assert_eq!(owner, Ok(("", MetadataComponent::Owner("fred".to_string())))) ;
     }
+
+    #[test]
+    fn can_parse_owner_variable() {
+       let owner = parse_owner("owner : $fred");
+       assert_eq!(owner, Ok(("", MetadataComponent::Owner("$fred".to_string())))) ;
+    }
+
     #[test]
     fn can_parse_owner_more_spaces() {
        let owner = parse_owner("  owner : fred  ");
