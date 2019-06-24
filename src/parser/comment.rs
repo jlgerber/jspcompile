@@ -1,12 +1,13 @@
+use crate::ParseResult;
 use nom::{
-    IResult,
-    sequence::{preceded},
+    branch::alt,
     bytes::complete::{tag},
     combinator::{rest,map},
     character::complete::{space0},
+    IResult,
+    sequence::{preceded},
 };
 
-use crate::ParseResult;
 
 /// Parser function which parses a comment given a string. A comment
 /// is defined as zero or more spaces, followed by a '#', followed by 
@@ -24,7 +25,10 @@ pub fn parse_comment(input: &str) -> IResult<&str, ParseResult> {
         preceded(
             preceded(
                 space0, 
-                tag("#")
+                alt((
+                    tag("#"),
+                    tag("//")
+                ))
             ),
             rest
         ), 
@@ -41,11 +45,16 @@ mod comment {
     use super::*;
  
     #[test]
-    fn can_parse_comment() {
+    fn can_parse_comment_pound() {
         let c = parse_comment(" # this is a comment");
         assert_eq!(c, Ok(("", ParseResult::Comment(" this is a comment".to_string()))));
     }
 
+    #[test]
+    fn can_parse_comment_double_slash() {
+        let c = parse_comment(" // this is a comment");
+        assert_eq!(c, Ok(("", ParseResult::Comment(" this is a comment".to_string()))));
+    }
  
     #[test]
     fn can_parse_comment_2() {
