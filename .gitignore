@@ -3,3 +3,4 @@
 examples/*.json
 examples/*.dot
 examples/*.png
+.vscode
