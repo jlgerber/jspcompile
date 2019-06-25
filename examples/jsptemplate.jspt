@@ -11,7 +11,7 @@ libsd_re = "(config|cortex|dmx|houdini|integ|jspools|katana|lw|massive|max|maya|
 // pre show 
 dd
 shows
-show = "[A-Z]+[A-Z0-9]*" "(REF|SHARED|OUTSOURCE|LOCATIONS)" [owner: jobsys, perms: 751, varname: DD_SHOW]
+show = "[A-Z]+[A-Z0-9]*" "(REF|SHARED|OUTSOURCE|LOCATIONS|DAILIES)" [owner: jobsys, perms: 751, varname: DD_SHOW]
 
 // REF AND SHOW LEVEL 
 
@@ -122,7 +122,7 @@ dailies = DAILIES
 //      SEQUENCE      //
 //--------------------//
 
-sequence = "(([A-Z]{2,4})|LIBRARY)" "(SHARED|etc|lib|tool|user|bin)" [varname: DD_SEQUENCE]
+sequence = "(([A-Z]{2,4})|LIBRARY)" "(SHARED|REF|OUTSOURCE|LOCATIONS|DAILIES)" [varname: DD_SEQUENCE]
     
 //---------------------//
 //         SHOT        //
@@ -134,7 +134,7 @@ shot =  "[0-9]+[A-Z0-9]*" [varname:DD_SHOT]
 //   GRAPH EDGES     //
 //-------------------//
 
-[edges]
+[edges] 
 // edges must start with root
 root -> dd -> shows -> show -> sequence -> shot
 
@@ -154,8 +154,9 @@ refdir -> threed -> threed_sd
 refdir -> chars -> chars_sd      
 refdir -> quicktimes -> qtsubdir
 
+
 // TOOLS 
-tools -> package 
+tools -> package
 tools -> extension 
 tools -> bin 
 tools -> etc   
@@ -182,6 +183,7 @@ show -> editorial
 show -> film_lens
 show -> conform 
 show -> assetdev -> adshot
+show -> dailies 
 
 // CONFORM 
 show -> conform
@@ -193,7 +195,7 @@ conform -> prod
 
 // SEQUENCE SUBDIRS
 
-sequence -> etc 
+sequence -> etc
 sequence -> tools
 sequence -> user
 sequence -> shared 
@@ -203,7 +205,7 @@ sequence -> prod
 // SHOT SUBDIRS
 
 shot -> tools 
-shot -> etc 
+shot -> etc  
 shot -> shared 
 shot -> user 
 shot -> lib 
